@@ -11,7 +11,7 @@ const DURATIONS = [
   { label: 'Plus de 20 min', min: 1200, max: 100000 },
 ]
 
-export default function Explore({ onNavigate, user, onProfileClick }) {
+export default function Explore({ onNavigate, user, token, onProfileClick }) {
   const [selectedVideo, setSelectedVideo] = useState(null)
   const [videos, setVideos] = useState([])
   const [loading, setLoading] = useState(true)
@@ -60,12 +60,11 @@ export default function Explore({ onNavigate, user, onProfileClick }) {
   }
 
   const handleLike = async () => {
-    if (!user) {
+    if (!user || !token) {
       alert('Veuillez vous connecter')
       return
     }
     try {
-      const token = localStorage.getItem('token')
       await api.toggleLike(token, selectedVideo.id)
       await loadVideoDetails()
     } catch (err) {
@@ -74,7 +73,7 @@ export default function Explore({ onNavigate, user, onProfileClick }) {
   }
 
   const handleAddComment = async () => {
-    if (!user) {
+    if (!user || !token) {
       alert('Veuillez vous connecter pour commenter')
       return
     }
@@ -85,12 +84,6 @@ export default function Explore({ onNavigate, user, onProfileClick }) {
 
     setCommentLoading(true)
     try {
-      const token = localStorage.getItem('token')
-      if (!token) {
-        alert('Token manquant. Reconnectez-vous.')
-        setCommentLoading(false)
-        return
-      }
       const result = await api.createComment(token, selectedVideo.id, newComment)
       if (result.error) {
         alert('Erreur: ' + result.error)
@@ -107,9 +100,8 @@ export default function Explore({ onNavigate, user, onProfileClick }) {
   }
 
   const handleDeleteComment = async (commentId) => {
-    if (!user) return
+    if (!user || !token) return
     try {
-      const token = localStorage.getItem('token')
       await api.deleteComment(token, commentId)
       await loadVideoDetails()
     } catch (err) {

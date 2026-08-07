@@ -86,6 +86,7 @@ function App() {
         <Explore
           onNavigate={setCurrentPage}
           user={user}
+          token={token}
           onProfileClick={() => setCurrentPage('profile')}
         />
       )
@@ -95,6 +96,7 @@ function App() {
         <Realisateurs
           onNavigate={setCurrentPage}
           user={user}
+          token={token}
           onProfileClick={() => setCurrentPage('profile')}
         />
       )
@@ -103,6 +105,7 @@ function App() {
       <Home
         onNavigate={setCurrentPage}
         user={user}
+        token={token}
         onProfileClick={() => setCurrentPage('profile')}
       />
     )
