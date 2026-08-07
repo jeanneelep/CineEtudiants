@@ -14,6 +14,7 @@ model User {
   password          String
   bio               String?
   avatar            String?
+  role              String   @default("user")
   emailVerified     Boolean  @default(false)
   verificationCode  String?
   verificationCodeExpires DateTime?
@@ -46,6 +47,7 @@ model Video {
 model Comment {
   id              String   @id @default(cuid())
   content         String
+  status          String   @default("pending")
   userId          String
   user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   videoId         String

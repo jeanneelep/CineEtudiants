@@ -7,6 +7,7 @@ import Explore from './pages/Explore'
 import Realisateurs from './pages/Realisateurs'
 import Profile from './pages/Profile'
 import Upload from './pages/Upload'
+import AdminDashboard from './pages/AdminDashboard'
 
 function App() {
   const [user, setUser] = useState(null)
@@ -62,6 +63,16 @@ function App() {
   }
 
   if (user) {
+    if (currentPage === 'admin') {
+      return (
+        <AdminDashboard
+          user={user}
+          token={token}
+          onLogout={handleLogout}
+          onBack={() => setCurrentPage('home')}
+        />
+      )
+    }
     if (currentPage === 'profile') {
       return (
         <Profile
@@ -110,6 +121,7 @@ function App() {
         token={token}
         onProfileClick={() => setCurrentPage('profile')}
         onLogout={handleLogout}
+        onAdminClick={user?.role === 'admin' ? () => setCurrentPage('admin') : null}
       />
     )
   }

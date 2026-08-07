@@ -5,7 +5,7 @@ import '../styles/Home.css'
 
 const CATEGORIES = ['Drame', 'Animation', 'Documentaire', 'Poétique', 'Expérimental']
 
-export default function Home({ onNavigate, user, token, onProfileClick, onLogout }) {
+export default function Home({ onNavigate, user, token, onProfileClick, onLogout, onAdminClick }) {
   const [selectedVideo, setSelectedVideo] = useState(null)
   const [videos, setVideos] = useState([])
   const [loading, setLoading] = useState(true)
@@ -13,6 +13,10 @@ export default function Home({ onNavigate, user, token, onProfileClick, onLogout
   const [videoComments, setVideoComments] = useState([])
   const [newComment, setNewComment] = useState('')
   const [commentLoading, setCommentLoading] = useState(false)
+  const [commentReplies, setCommentReplies] = useState({})
+  const [replyingTo, setReplyingTo] = useState(null)
+  const [replyContent, setReplyContent] = useState('')
+  const [replyLoading, setReplyLoading] = useState(false)
 
   useEffect(() => {
     loadVideos()
@@ -42,8 +46,33 @@ export default function Home({ onNavigate, user, token, onProfileClick, onLogout
       const comments = await api.getVideoComments(selectedVideo.id)
       setVideoLikes(likes)
       setVideoComments(Array.isArray(comments) ? comments : [])
+      // Charger les réponses pour chaque commentaire
+      if (Array.isArray(comments)) {
+        const repliesMap = {}
+        for (const comment of comments) {
+          try {
+            const replies = await api.getCommentReplies(comment.id)
+            repliesMap[comment.id] = Array.isArray(replies) ? replies : []
+          } catch (err) {
+            repliesMap[comment.id] = []
+          }
+        }
+        setCommentReplies(repliesMap)
+      }
     } catch (err) {
       console.error('Erreur chargement détails:', err)
+    }
+  }
+
+  const loadCommentReplies = async (commentId) => {
+    try {
+      const replies = await api.getCommentReplies(commentId)
+      setCommentReplies(prev => ({
+        ...prev,
+        [commentId]: Array.isArray(replies) ? replies : []
+      }))
+    } catch (err) {
+      console.error('Erreur chargement réponses:', err)
     }
   }
 
@@ -98,6 +127,34 @@ export default function Home({ onNavigate, user, token, onProfileClick, onLogout
     }
   }
 
+  const handleReply = async (commentId) => {
+    if (!user || !token) {
+      alert('Veuillez vous connecter pour répondre')
+      return
+    }
+    if (!replyContent.trim()) {
+      alert('Veuillez écrire une réponse')
+      return
+    }
+
+    setReplyLoading(true)
+    try {
+      const result = await api.replyToComment(token, commentId, replyContent)
+      if (result.error) {
+        alert('Erreur: ' + result.error)
+      } else {
+        setReplyContent('')
+        setReplyingTo(null)
+        await loadCommentReplies(commentId)
+      }
+    } catch (err) {
+      console.error('Erreur réponse:', err)
+      alert('Erreur lors de l\'envoi de la réponse: ' + err.message)
+    } finally {
+      setReplyLoading(false)
+    }
+  }
+
   const formatDuration = (seconds) => {
     if (typeof seconds === 'string') return seconds
     const mins = Math.floor(seconds / 60)
@@ -133,6 +190,11 @@ export default function Home({ onNavigate, user, token, onProfileClick, onLogout
           <div className="header-right">
             {user ? (
               <div className="user-menu">
+                {user.role === 'admin' && (
+                  <button className="admin-btn" onClick={onAdminClick} title="Dashboard Admin">
+                    👑
+                  </button>
+                )}
                 <button className="user-profile-btn" onClick={onProfileClick}>
                   {user.name.substring(0, 2).toUpperCase()}
                 </button>
@@ -297,9 +359,55 @@ export default function Home({ onNavigate, user, token, onProfileClick, onLogout
                         )}
                       </div>
                       <p className="comment-text">{comment.content}</p>
-                      <p className="comment-date">
-                        {new Date(comment.createdAt).toLocaleDateString('fr-FR')}
-                      </p>
+                      <div className="comment-footer">
+                        <p className="comment-date">
+                          {new Date(comment.createdAt).toLocaleDateString('fr-FR')}
+                        </p>
+                        {user && (
+                          <button
+                            className="reply-btn"
+                            onClick={() => setReplyingTo(replyingTo === comment.id ? null : comment.id)}
+                          >
+                            {replyingTo === comment.id ? 'Annuler' : 'Répondre'}
+                          </button>
+                        )}
+                      </div>
+
+                      {/* Formulaire de réponse */}
+                      {replyingTo === comment.id && user && (
+                        <div className="reply-form">
+                          <textarea
+                            value={replyContent}
+                            onChange={(e) => setReplyContent(e.target.value)}
+                            placeholder="Votre réponse..."
+                            className="reply-input"
+                          />
+                          <button
+                            onClick={() => handleReply(comment.id)}
+                            disabled={replyLoading || !replyContent.trim()}
+                            className="reply-submit"
+                          >
+                            {replyLoading ? 'Envoi...' : 'Envoyer'}
+                          </button>
+                        </div>
+                      )}
+
+                      {/* Affichage des réponses */}
+                      {commentReplies[comment.id] && commentReplies[comment.id].length > 0 && (
+                        <div className="replies-container">
+                          {commentReplies[comment.id].map(reply => (
+                            <div key={reply.id} className="reply-item">
+                              <div className="reply-header">
+                                <strong>{reply.user.name}</strong>
+                              </div>
+                              <p className="reply-text">{reply.content}</p>
+                              <p className="reply-date">
+                                {new Date(reply.createdAt).toLocaleDateString('fr-FR')}
+                              </p>
+                            </div>
+                          ))}
+                        </div>
+                      )}
                     </div>
                   ))}
                 </div>

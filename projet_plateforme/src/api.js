@@ -143,5 +143,69 @@ export const api = {
       body: JSON.stringify(profileData)
     })
     return res.json()
+  },
+
+  // Admin
+  getAdminStats: async (token) => {
+    const res = await fetch(`${API_URL}/admin/stats`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    })
+    return res.json()
+  },
+
+  getAdminVideos: async (token, status = null) => {
+    const url = status 
+      ? `${API_URL}/admin/videos?status=${status}`
+      : `${API_URL}/admin/videos`
+    const res = await fetch(url, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    })
+    return res.json()
+  },
+
+  approveVideo: async (token, videoId) => {
+    const res = await fetch(`${API_URL}/admin/videos/${videoId}/approve`, {
+      method: 'PUT',
+      headers: { 'Authorization': `Bearer ${token}` }
+    })
+    return res.json()
+  },
+
+  rejectVideo: async (token, videoId, reason) => {
+    const res = await fetch(`${API_URL}/admin/videos/${videoId}/reject`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({ reason })
+    })
+    return res.json()
+  },
+
+  getAdminComments: async (token, status = null) => {
+    const url = status
+      ? `${API_URL}/admin/comments?status=${status}`
+      : `${API_URL}/admin/comments`
+    const res = await fetch(url, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    })
+    return res.json()
+  },
+
+  approveComment: async (token, commentId) => {
+    const res = await fetch(`${API_URL}/admin/comments/${commentId}/approve`, {
+      method: 'PUT',
+      headers: { 'Authorization': `Bearer ${token}` }
+    })
+    return res.json()
+  },
+
+  rejectComment: async (token, commentId) => {
+    const res = await fetch(`${API_URL}/admin/comments/${commentId}/reject`, {
+      method: 'PUT',
+      headers: { 'Authorization': `Bearer ${token}` }
+    })
+    return res.json()
   }
 }

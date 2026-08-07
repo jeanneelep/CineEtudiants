@@ -1,23 +1,35 @@
-import sgMail from '@sendgrid/mail'
+import nodemailer from 'nodemailer'
 
-if (process.env.SENDGRID_API_KEY) {
-  sgMail.setApiKey(process.env.SENDGRID_API_KEY)
-}
+let transporter: any = null
 
 export const initializeEmail = async () => {
-  console.log('✓ SendGrid configured')
+  if (process.env.MAILTRAP_API_TOKEN) {
+    transporter = nodemailer.createTransport({
+      host: 'send.mailtrap.io',
+      port: 587,
+      auth: {
+        user: 'api',
+        pass: process.env.MAILTRAP_API_TOKEN
+      }
+    })
+    console.log('✓ Mailtrap configured')
+  }
 }
 
 export const sendVerificationEmail = async (email: string, code: string): Promise<boolean> => {
   try {
-    if (!process.env.SENDGRID_API_KEY) {
+    if (!transporter) {
+      await initializeEmail()
+    }
+
+    if (!transporter) {
       console.log(`[FALLBACK] Verification code for ${email}: ${code}`)
       return true
     }
 
-    await sgMail.send({
+    await transporter.sendMail({
+      from: 'CinéÉtudiants <noreply@cinetudiants.com>',
       to: email,
-      from: 'noreply@cinetudiants.com',
       subject: 'Vérifiez votre adresse email - CinéÉtudiants',
       html: `
         <h2>Bienvenue sur CinéÉtudiants!</h2>
@@ -31,7 +43,7 @@ export const sendVerificationEmail = async (email: string, code: string): Promis
     console.log(`✓ Email sent to ${email}`)
     return true
   } catch (err) {
-    console.error('SendGrid error:', err)
+    console.error('Mailtrap error:', err)
     return false
   }
 }

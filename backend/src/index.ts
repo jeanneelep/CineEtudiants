@@ -6,6 +6,7 @@ import videoRoutes from './routes/videoRoutes'
 import commentRoutes from './routes/commentRoutes'
 import likeRoutes from './routes/likeRoutes'
 import userRoutes from './routes/userRoutes'
+import adminRoutes from './routes/adminRoutes'
 import { initializeEmail } from './services/emailService'
 
 dotenv.config()
@@ -26,6 +27,7 @@ app.use('/api/videos', videoRoutes)
 app.use('/api/videos', commentRoutes)
 app.use('/api/videos', likeRoutes)
 app.use('/api/users', userRoutes)
+app.use('/api/admin', adminRoutes)
 
 app.listen(PORT, () => {
   console.log(`✓ Server running on http://localhost:${PORT}`)

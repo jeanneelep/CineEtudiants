@@ -8,12 +8,19 @@ const GENRES = [
   'Science-fiction', 'Fantasy', 'Aventure', 'Historique', 'Autre'
 ]
 
+const VALID_VIDEO_TYPES = ['video/mp4', 'video/webm', 'video/quicktime', 'video/x-msvideo']
+const VALID_VIDEO_EXTENSIONS = ['.mp4', '.webm', '.mov', '.avi']
+const MAX_FILE_SIZE = 500 * 1024 * 1024 // 500MB
+
 export default function Upload({ user, token, onBack, onUpload }) {
   const [videoFile, setVideoFile] = useState(null)
   const [thumbnail, setThumbnail] = useState(null)
   const [dragActive, setDragActive] = useState(false)
   const [uploading, setUploading] = useState(false)
   const [uploadProgress, setUploadProgress] = useState(0)
+  const [uploadSuccess, setUploadSuccess] = useState(false)
+  const [uploadedVideo, setUploadedVideo] = useState(null)
+  const [validationError, setValidationError] = useState('')
   const [coAuthors, setCoAuthors] = useState([''])
   const [formData, setFormData] = useState({
     title: '',
@@ -27,6 +34,45 @@ export default function Upload({ user, token, onBack, onUpload }) {
 
   const videoInputRef = useRef(null)
   const thumbnailInputRef = useRef(null)
+  const videoPreviewRef = useRef(null)
+
+  // Validation: Check file size and format BEFORE upload
+  const isValidVideoFile = (file) => {
+    setValidationError('')
+    
+    if (!file) {
+      setValidationError('Aucun fichier sélectionné')
+      return false
+    }
+
+    // Check file extension
+    const fileName = file.name.toLowerCase()
+    const hasValidExt = VALID_VIDEO_EXTENSIONS.some(ext => fileName.endsWith(ext))
+    if (!hasValidExt) {
+      setValidationError(`Format non supporté. Formats acceptés: ${VALID_VIDEO_EXTENSIONS.join(', ')}`)
+      return false
+    }
+
+    // Check file size (max 500MB)
+    if (file.size > MAX_FILE_SIZE) {
+      const sizeMB = (file.size / 1024 / 1024).toFixed(1)
+      const maxMB = (MAX_FILE_SIZE / 1024 / 1024).toFixed(0)
+      setValidationError(`Fichier trop volumineux (${sizeMB}MB). Maximum autorisé: ${maxMB}MB`)
+      return false
+    }
+
+    // Check MIME type (optional, some browsers don't support it)
+    if (file.type && !VALID_VIDEO_TYPES.includes(file.type)) {
+      // Allow if extension is correct
+      if (hasValidExt) {
+        return true
+      }
+      setValidationError('Type de fichier invalide')
+      return false
+    }
+
+    return true
+  }
 
   const handleVideoDrag = (e) => {
     e.preventDefault()
@@ -47,19 +93,8 @@ export default function Upload({ user, token, onBack, onUpload }) {
       const file = files[0]
       if (isValidVideoFile(file)) {
         setVideoFile(file)
-      } else {
-        alert('Format invalide. MP4 ou MOV max 3GB')
       }
     }
-  }
-
-  const isValidVideoFile = (file) => {
-    const validTypes = ['video/mp4', 'video/quicktime']
-    const validExt = ['.mp4', '.mov']
-    const isType = validTypes.includes(file.type)
-    const isExt = validExt.some(ext => file.name.toLowerCase().endsWith(ext))
-    const isSize = file.size <= 3 * 1024 * 1024 * 1024
-    return (isType || isExt) && isSize
   }
 
   const handleVideoClick = () => videoInputRef.current?.click()
@@ -67,8 +102,6 @@ export default function Upload({ user, token, onBack, onUpload }) {
     const file = e.target.files?.[0]
     if (file && isValidVideoFile(file)) {
       setVideoFile(file)
-    } else if (file) {
-      alert('Fichier trop gros ou mauvais format')
     }
   }
 
@@ -97,19 +130,41 @@ export default function Upload({ user, token, onBack, onUpload }) {
     setCoAuthors(coAuthors.filter((_, i) => i !== index))
   }
 
+  const handleGoHome = () => {
+    onUpload(uploadedVideo)
+  }
+
+  const handleUploadNewVideo = () => {
+    setVideoFile(null)
+    setUploadSuccess(false)
+    setUploadedVideo(null)
+    setUploadProgress(0)
+    setFormData({
+      title: '',
+      description: '',
+      genre: 'Drame',
+      year: new Date().getFullYear(),
+      duration: '',
+      visibility: 'public',
+      tags: '',
+    })
+    setCoAuthors([''])
+  }
+
   const handleSubmit = async (e) => {
     e.preventDefault()
     if (!videoFile) {
-      alert('Sélectionnez une vidéo')
+      setValidationError('Sélectionnez une vidéo')
       return
     }
     if (!formData.title.trim()) {
-      alert('Entrez un titre')
+      setValidationError('Entrez un titre')
       return
     }
 
     setUploading(true)
     setUploadProgress(0)
+    setValidationError('')
 
     try {
       const durationSec = parseInt(formData.duration) * 60 || 300
@@ -121,13 +176,13 @@ export default function Upload({ user, token, onBack, onUpload }) {
       formDataMultipart.append('category', formData.genre)
       formDataMultipart.append('duration', durationSec.toString())
 
-      setUploadProgress(25)
+      setUploadProgress(10)
 
       const xhr = new XMLHttpRequest()
 
       xhr.upload.addEventListener('progress', (e) => {
         if (e.lengthComputable) {
-          const percentComplete = (e.loaded / e.total) * 75 + 25
+          const percentComplete = (e.loaded / e.total) * 85 + 10
           setUploadProgress(Math.round(percentComplete))
         }
       })
@@ -136,20 +191,18 @@ export default function Upload({ user, token, onBack, onUpload }) {
         if (xhr.status === 201) {
           const result = JSON.parse(xhr.responseText)
           setUploadProgress(100)
-          setTimeout(() => {
-            onUpload(result)
-            setUploading(false)
-            setUploadProgress(0)
-          }, 500)
+          setUploadedVideo(result)
+          setUploadSuccess(true)
+          setUploading(false)
         } else {
           const error = JSON.parse(xhr.responseText)
-          alert('Erreur: ' + (error.error || 'Upload failed'))
+          setValidationError('Erreur: ' + (error.error || 'Upload failed'))
           setUploading(false)
         }
       })
 
       xhr.addEventListener('error', () => {
-        alert('Erreur de connexion')
+        setValidationError('Erreur de connexion')
         setUploading(false)
       })
 
@@ -157,9 +210,62 @@ export default function Upload({ user, token, onBack, onUpload }) {
       xhr.setRequestHeader('Authorization', `Bearer ${token}`)
       xhr.send(formDataMultipart)
     } catch (err) {
-      alert('Erreur: ' + err.message)
+      setValidationError('Erreur: ' + err.message)
       setUploading(false)
     }
+  }
+
+  // Success state - show video preview
+  if (uploadSuccess && uploadedVideo) {
+    return (
+      <div className="upload-container">
+        <header className="upload-header">
+          <div className="upload-header-content">
+            <button onClick={onBack} className="back-btn-upload">← Retour</button>
+            <h1>Uploader une vidéo</h1>
+            <div></div>
+          </div>
+        </header>
+
+        <main className="upload-main">
+          <div className="success-container">
+            <div className="success-icon-large">✅</div>
+            <h1>Vidéo uploadée avec succès!</h1>
+            <p className="success-subtitle">Votre vidéo est maintenant en attente de modération</p>
+
+            <div className="video-preview-section">
+              <h2>Aperçu de votre vidéo</h2>
+              <div className="video-preview">
+                <video 
+                  ref={videoPreviewRef}
+                  controls
+                  width="100%"
+                  poster={uploadedVideo.thumbnail || 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 225"%3E%3Crect fill="%23111827" width="400" height="225"/%3E%3Ctext x="50%25" y="50%25" text-anchor="middle" dy=".3em" fill="%236b7280" font-size="24"%3E📹%3C/text%3E%3C/svg%3E'}
+                >
+                  <source src={URL.createObjectURL(videoFile)} type={videoFile.type || 'video/mp4'} />
+                  Votre navigateur ne supporte pas la lecture vidéo
+                </video>
+              </div>
+              <div className="video-info">
+                <p><strong>Titre:</strong> {formData.title}</p>
+                <p><strong>Genre:</strong> {formData.genre}</p>
+                <p><strong>Taille:</strong> {(videoFile.size / 1024 / 1024).toFixed(1)} MB</p>
+                {formData.description && <p><strong>Description:</strong> {formData.description}</p>}
+              </div>
+            </div>
+
+            <div className="success-actions">
+              <button onClick={handleGoHome} className="success-btn success-btn-primary">
+                → Voir ma vidéo
+              </button>
+              <button onClick={handleUploadNewVideo} className="success-btn success-btn-secondary">
+                ⬆️ Uploader une autre vidéo
+              </button>
+            </div>
+          </div>
+        </main>
+      </div>
+    )
   }
 
   return (
@@ -179,7 +285,7 @@ export default function Upload({ user, token, onBack, onUpload }) {
             <div className="guide-card">
               <div className="guide-icon">📹</div>
               <h3>Format vidéo</h3>
-              <p>MP4 ou MOV</p>
+              <p>MP4, WebM, MOV ou AVI</p>
             </div>
             <div className="guide-card">
               <div className="guide-icon">⏱️</div>
@@ -189,7 +295,7 @@ export default function Upload({ user, token, onBack, onUpload }) {
             <div className="guide-card">
               <div className="guide-icon">💾</div>
               <h3>Taille</h3>
-              <p>Max 3 GB</p>
+              <p>Max 500 MB</p>
             </div>
           </div>
           <div className="guide-tips">
@@ -229,25 +335,35 @@ export default function Upload({ user, token, onBack, onUpload }) {
                   <div className="upload-icon">📹</div>
                   <h3>Glissez votre vidéo ici</h3>
                   <p>ou cliquez pour sélectionner</p>
-                  <span className="upload-hint">MP4, MOV • Jusqu'à 3 GB</span>
+                  <span className="upload-hint">MP4, WebM, MOV, AVI • Jusqu'à 500 MB</span>
                 </div>
               )}
             </div>
             <input
               ref={videoInputRef}
               type="file"
-              accept="video/mp4,.mp4,video/quicktime,.mov"
+              accept="video/*,.mp4,.webm,.mov,.avi"
               onChange={handleVideoInputChange}
               style={{display: 'none'}}
             />
 
+            {validationError && (
+              <div className="validation-error">
+                <span className="error-icon">⚠️</span>
+                <span className="error-message">{validationError}</span>
+              </div>
+            )}
+
             {uploading && (
               <div className="progress-section">
-                <p className="progress-label">Upload en cours...</p>
+                <div className="progress-label-container">
+                  <p className="progress-label">Uploading...</p>
+                  <p className="progress-percent">{Math.round(uploadProgress)}%</p>
+                </div>
                 <div className="progress-bar">
                   <div className="progress-fill" style={{width: `${uploadProgress}%`}}></div>
                 </div>
-                <p className="progress-percent">{Math.round(uploadProgress)}%</p>
+                <p className="progress-detail">Ne fermez pas cette fenêtre pendant l'upload</p>
               </div>
             )}
           </div>
