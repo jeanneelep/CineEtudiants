@@ -80,3 +80,54 @@ export const deleteComment = async (req: AuthRequest, res: Response) => {
     res.status(500).json({ error: 'Failed to delete comment' })
   }
 }
+
+export const replyToComment = async (req: AuthRequest, res: Response) => {
+  try {
+    const { commentId } = req.params as { commentId: string }
+    const { content } = req.body
+    const userId = req.userId
+
+    if (!userId) {
+      return res.status(401).json({ error: 'Not authenticated' })
+    }
+
+    if (!content || typeof content !== 'string' || content.trim().length === 0) {
+      return res.status(400).json({ error: 'Reply content is required' })
+    }
+
+    const parentComment = await prisma.comment.findUnique({ where: { id: commentId } })
+    if (!parentComment) {
+      return res.status(404).json({ error: 'Parent comment not found' })
+    }
+
+    const reply = await prisma.comment.create({
+      data: {
+        content: content.trim(),
+        userId,
+        videoId: parentComment.videoId,
+        parentCommentId: commentId
+      },
+      include: { user: { select: { id: true, name: true, avatar: true } } }
+    })
+
+    res.status(201).json(reply)
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to create reply' })
+  }
+}
+
+export const getCommentReplies = async (req: AuthRequest, res: Response) => {
+  try {
+    const { commentId } = req.params as { commentId: string }
+
+    const replies = await prisma.comment.findMany({
+      where: { parentCommentId: commentId },
+      include: { user: { select: { id: true, name: true, avatar: true } } },
+      orderBy: { createdAt: 'asc' }
+    })
+
+    res.json(replies)
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to fetch replies' })
+  }
+}

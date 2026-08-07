@@ -91,6 +91,23 @@ export const api = {
     return res.json()
   },
 
+  getCommentReplies: async (commentId) => {
+    const res = await fetch(`${API_URL}/videos/comment/${commentId}/replies`)
+    return res.json()
+  },
+
+  replyToComment: async (token, commentId, content) => {
+    const res = await fetch(`${API_URL}/videos/comment/${commentId}/replies`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({ content })
+    })
+    return res.json()
+  },
+
   // Likes
   getVideoLikes: async (videoId) => {
     const res = await fetch(`${API_URL}/videos/${videoId}/likes`)
