@@ -113,29 +113,49 @@ export default function Upload({ user, token, onBack, onUpload }) {
 
     try {
       const durationSec = parseInt(formData.duration) * 60 || 300
-      const videoData = {
-        title: formData.title,
-        description: formData.description,
-        category: formData.genre,
-        duration: durationSec,
-        url: videoFile.name,
-        thumbnail: thumbnail?.name || null
-      }
 
-      setUploadProgress(50)
-      const result = await api.createVideo(token, videoData)
+      const formDataMultipart = new FormData()
+      formDataMultipart.append('videoFile', videoFile)
+      formDataMultipart.append('title', formData.title)
+      formDataMultipart.append('description', formData.description)
+      formDataMultipart.append('category', formData.genre)
+      formDataMultipart.append('duration', durationSec.toString())
 
-      if (result.error) {
-        alert('Erreur: ' + result.error)
-        setUploading(false)
-      } else {
-        setUploadProgress(100)
-        setTimeout(() => {
-          onUpload(result)
+      setUploadProgress(25)
+
+      const xhr = new XMLHttpRequest()
+
+      xhr.upload.addEventListener('progress', (e) => {
+        if (e.lengthComputable) {
+          const percentComplete = (e.loaded / e.total) * 75 + 25
+          setUploadProgress(Math.round(percentComplete))
+        }
+      })
+
+      xhr.addEventListener('load', () => {
+        if (xhr.status === 201) {
+          const result = JSON.parse(xhr.responseText)
+          setUploadProgress(100)
+          setTimeout(() => {
+            onUpload(result)
+            setUploading(false)
+            setUploadProgress(0)
+          }, 500)
+        } else {
+          const error = JSON.parse(xhr.responseText)
+          alert('Erreur: ' + (error.error || 'Upload failed'))
           setUploading(false)
-          setUploadProgress(0)
-        }, 500)
-      }
+        }
+      })
+
+      xhr.addEventListener('error', () => {
+        alert('Erreur de connexion')
+        setUploading(false)
+      })
+
+      xhr.open('POST', 'http://localhost:5000/api/videos')
+      xhr.setRequestHeader('Authorization', `Bearer ${token}`)
+      xhr.send(formDataMultipart)
     } catch (err) {
       alert('Erreur: ' + err.message)
       setUploading(false)
