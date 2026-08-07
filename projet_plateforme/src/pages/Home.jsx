@@ -21,6 +21,9 @@ export default function Home({ onNavigate, user, token, onProfileClick, onLogout
   const [editContent, setEditContent] = useState('')
   const [editLoading, setEditLoading] = useState(false)
   const [openMenuId, setOpenMenuId] = useState(null)
+  const [editingReplyId, setEditingReplyId] = useState(null)
+  const [editReplyContent, setEditReplyContent] = useState('')
+  const [openReplyMenuId, setOpenReplyMenuId] = useState(null)
 
   useEffect(() => {
     loadVideos()
@@ -199,6 +202,51 @@ export default function Home({ onNavigate, user, token, onProfileClick, onLogout
       alert('Erreur lors de l\'envoi de la réponse: ' + err.message)
     } finally {
       setReplyLoading(false)
+    }
+  }
+
+  const handleEditReply = (reply) => {
+    setEditingReplyId(reply.id)
+    setEditReplyContent(reply.content)
+  }
+
+  const handleCancelReplyEdit = () => {
+    setEditingReplyId(null)
+    setEditReplyContent('')
+  }
+
+  const handleSaveReplyEdit = async (replyId, commentId) => {
+    if (!token || !editReplyContent.trim()) {
+      alert('Le contenu de la réponse ne peut pas être vide')
+      return
+    }
+
+    setEditLoading(true)
+    try {
+      const result = await api.editComment(token, replyId, editReplyContent)
+      if (result.error) {
+        alert('Erreur: ' + result.error)
+      } else {
+        setEditingReplyId(null)
+        setEditReplyContent('')
+        await loadCommentReplies(commentId)
+      }
+    } catch (err) {
+      console.error('Erreur édition réponse:', err)
+      alert('Erreur lors de la modification: ' + err.message)
+    } finally {
+      setEditLoading(false)
+    }
+  }
+
+  const handleDeleteReply = async (replyId, commentId) => {
+    if (!user || !window.confirm('Êtes-vous sûr de vouloir supprimer cette réponse ?')) return
+    try {
+      const token = localStorage.getItem('token')
+      await api.deleteComment(token, replyId)
+      await loadCommentReplies(commentId)
+    } catch (err) {
+      console.error('Erreur suppression réponse:', err)
     }
   }
 
@@ -499,8 +547,69 @@ export default function Home({ onNavigate, user, token, onProfileClick, onLogout
                             <div key={reply.id} className="reply-item">
                               <div className="reply-header">
                                 <strong>{reply.user.name}</strong>
+                                {user?.id === reply.userId && (
+                                  <div className="kebab-menu-container">
+                                    <button
+                                      className="kebab-button"
+                                      onClick={() => setOpenReplyMenuId(openReplyMenuId === reply.id ? null : reply.id)}
+                                      title="Options"
+                                    >
+                                      •••
+                                    </button>
+                                    {openReplyMenuId === reply.id && (
+                                      <div className="kebab-menu">
+                                        <button
+                                          className="kebab-item"
+                                          onClick={() => {
+                                            handleEditReply(reply)
+                                            setOpenReplyMenuId(null)
+                                          }}
+                                        >
+                                          Modifier
+                                        </button>
+                                        <button
+                                          className="kebab-item kebab-delete"
+                                          onClick={() => {
+                                            handleDeleteReply(reply.id, comment.id)
+                                            setOpenReplyMenuId(null)
+                                          }}
+                                        >
+                                          Supprimer
+                                        </button>
+                                      </div>
+                                    )}
+                                  </div>
+                                )}
                               </div>
-                              <p className="reply-text">{reply.content}</p>
+
+                              {editingReplyId === reply.id ? (
+                                <div className="comment-edit-form">
+                                  <textarea
+                                    value={editReplyContent}
+                                    onChange={(e) => setEditReplyContent(e.target.value)}
+                                    className="edit-input"
+                                    placeholder="Modifier votre réponse..."
+                                  />
+                                  <div className="edit-buttons">
+                                    <button
+                                      onClick={() => handleSaveReplyEdit(reply.id, comment.id)}
+                                      disabled={editLoading || !editReplyContent.trim()}
+                                      className="edit-save-btn"
+                                    >
+                                      {editLoading ? 'Sauvegarde...' : 'Sauvegarder'}
+                                    </button>
+                                    <button
+                                      onClick={handleCancelReplyEdit}
+                                      className="edit-cancel-btn"
+                                    >
+                                      Annuler
+                                    </button>
+                                  </div>
+                                </div>
+                              ) : (
+                                <p className="reply-text">{reply.content}</p>
+                              )}
+
                               <p className="reply-date">
                                 {new Date(reply.createdAt).toLocaleDateString('fr-FR')}
                               </p>
