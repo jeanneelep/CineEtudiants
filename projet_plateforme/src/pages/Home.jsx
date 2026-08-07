@@ -186,6 +186,9 @@ export default function Home({ onNavigate, user, token, onProfileClick, onLogout
             <button className="nav-link active" onClick={() => onNavigate('home')}>Accueil</button>
             <button className="nav-link" onClick={() => onNavigate('explore')}>Explorer</button>
             <button className="nav-link" onClick={() => onNavigate('realisateurs')}>Réalisateurs</button>
+            {user?.role === 'admin' && (
+              <button className="nav-link moderation" onClick={() => onNavigate('admin')}>🔒 Modération</button>
+            )}
           </nav>
           <div className="header-right">
             {user ? (

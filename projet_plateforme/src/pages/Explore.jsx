@@ -219,6 +219,9 @@ export default function Explore({ onNavigate, user, token, onProfileClick, onLog
             <button onClick={() => onNavigate('home')}>Accueil</button>
             <button className="active">Explorer</button>
             <button onClick={() => onNavigate('realisateurs')}>Réalisateurs</button>
+            {user?.role === 'admin' && (
+              <button className="moderation" onClick={() => onNavigate('admin')}>🔒 Modération</button>
+            )}
           </nav>
           <div className="header-right">
             {user ? (

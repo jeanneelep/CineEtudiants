@@ -43,6 +43,9 @@ export default function Realisateurs({ onNavigate, user, onProfileClick }) {
             <button onClick={() => onNavigate('home')}>Accueil</button>
             <button onClick={() => onNavigate('explore')}>Explorer</button>
             <button className="active">Réalisateurs</button>
+            {user?.role === 'admin' && (
+              <button className="moderation" onClick={() => onNavigate('admin')}>🔒 Modération</button>
+            )}
           </nav>
           <div className="header-right">
             {user ? (

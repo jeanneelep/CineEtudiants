@@ -56,6 +56,19 @@
   background: rgba(99, 102, 241, 0.1);
 }
 
+.explore-nav button.moderation {
+  background: rgba(220, 38, 38, 0.15);
+  color: #fca5a5;
+  border: 1px solid rgba(220, 38, 38, 0.3);
+  font-weight: 600;
+}
+
+.explore-nav button.moderation:hover {
+  background: rgba(220, 38, 38, 0.25);
+  color: #fecaca;
+  border-color: rgba(220, 38, 38, 0.5);
+}
+
 .header-right {
   display: flex;
   gap: 1rem;
