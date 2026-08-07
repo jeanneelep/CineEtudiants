@@ -8,14 +8,17 @@ datasource db {
 }
 
 model User {
-  id        String   @id @default(cuid())
-  email     String   @unique
-  name      String
-  password  String
-  bio       String?
-  avatar    String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id                String   @id @default(cuid())
+  email             String   @unique
+  name              String
+  password          String
+  bio               String?
+  avatar            String?
+  emailVerified     Boolean  @default(false)
+  verificationCode  String?
+  verificationCodeExpires DateTime?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
 
   videos    Video[]
   comments  Comment[]

@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { api } from '../api'
+import VerifyEmail from './VerifyEmail'
 import '../styles/Auth.css'
 
 export default function Register({ onRegister, onSwitchLogin }) {
@@ -9,6 +10,7 @@ export default function Register({ onRegister, onSwitchLogin }) {
   const [passwordConfirm, setPasswordConfirm] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [registeredEmail, setRegisteredEmail] = useState(null)
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -40,13 +42,25 @@ export default function Register({ onRegister, onSwitchLogin }) {
       if (result.error) {
         setError(result.error)
       } else {
-        onRegister(result.user, result.token)
+        setRegisteredEmail(email)
       }
     } catch (err) {
       setError('Erreur de connexion au serveur')
     } finally {
       setLoading(false)
     }
+  }
+
+  if (registeredEmail) {
+    return (
+      <VerifyEmail
+        email={registeredEmail}
+        onVerified={(token, user) => {
+          onRegister(user, token)
+        }}
+        onBack={() => setRegisteredEmail(null)}
+      />
+    )
   }
 
   return (

@@ -11,6 +11,28 @@ export const api = {
     return res.json()
   },
 
+  verifyEmail: async (email, code) => {
+    const res = await fetch(`${API_URL}/auth/verify-email`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, code })
+    })
+    const data = await res.json()
+    if (!res.ok) throw new Error(data.error || 'Verification failed')
+    return data
+  },
+
+  resendCode: async (email) => {
+    const res = await fetch(`${API_URL}/auth/resend-code`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email })
+    })
+    const data = await res.json()
+    if (!res.ok) throw new Error(data.error || 'Failed to resend')
+    return data
+  },
+
   login: async (email, password) => {
     const res = await fetch(`${API_URL}/auth/login`, {
       method: 'POST',

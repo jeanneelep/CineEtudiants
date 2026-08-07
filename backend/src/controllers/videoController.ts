@@ -1,6 +1,7 @@
 import { Response } from 'express'
 import { PrismaClient } from '@prisma/client'
 import { AuthRequest } from '../middleware/auth'
+import { detectForbiddenContent } from '../utils/contentFilter'
 
 const prisma = new PrismaClient()
 
@@ -54,9 +55,16 @@ export const createVideo = async (req: AuthRequest, res: Response) => {
       return res.status(401).json({ error: 'Not authenticated' })
     }
 
+    const user = await prisma.user.findUnique({ where: { id: creatorId } })
+    if (!user?.emailVerified) {
+      return res.status(403).json({ error: 'Please verify your email before uploading' })
+    }
+
     if (!title || !url || !category || !duration) {
       return res.status(400).json({ error: 'Missing required fields' })
     }
+
+    const hasForbiddenContent = detectForbiddenContent(title, description || '')
 
     const video = await prisma.video.create({
       data: {
@@ -67,12 +75,15 @@ export const createVideo = async (req: AuthRequest, res: Response) => {
         category,
         duration,
         creatorId,
-        status: 'pending'
+        status: hasForbiddenContent ? 'rejected' : 'approved'
       },
       include: { creator: { select: { id: true, name: true } } }
     })
 
-    res.status(201).json(video)
+    res.status(201).json({
+      ...video,
+      message: hasForbiddenContent ? 'Video rejected: contains forbidden content' : 'Video uploaded successfully'
+    })
   } catch (error) {
     res.status(500).json({ error: 'Failed to create video' })
   }
