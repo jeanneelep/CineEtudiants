@@ -6,8 +6,10 @@ import videoRoutes from './routes/videoRoutes'
 import commentRoutes from './routes/commentRoutes'
 import likeRoutes from './routes/likeRoutes'
 import userRoutes from './routes/userRoutes'
+import { initializeEmail } from './services/emailService'
 
 dotenv.config()
+initializeEmail().catch(err => console.error('Email init error:', err))
 
 const app = express()
 const PORT = process.env.PORT || 5000

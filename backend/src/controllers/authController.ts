@@ -38,7 +38,8 @@ export const register = async (req: AuthRequest, res: Response) => {
 
     res.status(201).json({
       message: 'Registration successful. Check your email for verification code.',
-      user: { id: user.id, email: user.email, name: user.name, emailVerified: false }
+      user: { id: user.id, email: user.email, name: user.name, emailVerified: false },
+      ...(process.env.NODE_ENV !== 'production' && { devVerificationCode: verificationCode })
     })
   } catch (error) {
     res.status(500).json({ error: 'Registration failed' })

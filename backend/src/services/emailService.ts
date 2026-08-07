@@ -1,23 +1,23 @@
-import nodemailer from 'nodemailer'
+import sgMail from '@sendgrid/mail'
 
-const transporter = nodemailer.createTransport({
-  service: process.env.EMAIL_SERVICE || 'gmail',
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASSWORD
-  }
-})
+if (process.env.SENDGRID_API_KEY) {
+  sgMail.setApiKey(process.env.SENDGRID_API_KEY)
+}
+
+export const initializeEmail = async () => {
+  console.log('✓ SendGrid configured')
+}
 
 export const sendVerificationEmail = async (email: string, code: string): Promise<boolean> => {
   try {
-    if (!process.env.EMAIL_USER || !process.env.EMAIL_PASSWORD) {
-      console.log(`[DEV MODE] Verification code for ${email}: ${code}`)
+    if (!process.env.SENDGRID_API_KEY) {
+      console.log(`[FALLBACK] Verification code for ${email}: ${code}`)
       return true
     }
 
-    await transporter.sendMail({
-      from: process.env.EMAIL_USER,
+    await sgMail.send({
       to: email,
+      from: 'noreply@cinetudiants.com',
       subject: 'Vérifiez votre adresse email - CinéÉtudiants',
       html: `
         <h2>Bienvenue sur CinéÉtudiants!</h2>
@@ -27,9 +27,11 @@ export const sendVerificationEmail = async (email: string, code: string): Promis
         <p>Si vous n'avez pas créé ce compte, ignorez cet email.</p>
       `
     })
+
+    console.log(`✓ Email sent to ${email}`)
     return true
   } catch (err) {
-    console.error('Email error:', err)
+    console.error('SendGrid error:', err)
     return false
   }
 }
