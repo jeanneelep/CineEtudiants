@@ -11,7 +11,7 @@ const DURATIONS = [
   { label: 'Plus de 20 min', min: 1200, max: 100000 },
 ]
 
-export default function Explore({ onNavigate, user, token, onProfileClick }) {
+export default function Explore({ onNavigate, user, token, onProfileClick, onLogout }) {
   const [selectedVideo, setSelectedVideo] = useState(null)
   const [videos, setVideos] = useState([])
   const [loading, setLoading] = useState(true)
@@ -165,9 +165,14 @@ export default function Explore({ onNavigate, user, token, onProfileClick }) {
           </nav>
           <div className="header-right">
             {user ? (
-              <button className="user-profile-btn" onClick={onProfileClick}>
-                {user.name.substring(0, 2).toUpperCase()}
-              </button>
+              <div className="user-menu">
+                <button className="user-profile-btn" onClick={onProfileClick}>
+                  {user.name.substring(0, 2).toUpperCase()}
+                </button>
+                <button className="logout-btn" onClick={onLogout} title="Déconnexion">
+                  🚪
+                </button>
+              </div>
             ) : (
               <button className="login-btn">Se connecter</button>
             )}

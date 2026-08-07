@@ -88,6 +88,7 @@ function App() {
           user={user}
           token={token}
           onProfileClick={() => setCurrentPage('profile')}
+          onLogout={handleLogout}
         />
       )
     }
@@ -98,6 +99,7 @@ function App() {
           user={user}
           token={token}
           onProfileClick={() => setCurrentPage('profile')}
+          onLogout={handleLogout}
         />
       )
     }
@@ -107,6 +109,7 @@ function App() {
         user={user}
         token={token}
         onProfileClick={() => setCurrentPage('profile')}
+        onLogout={handleLogout}
       />
     )
   }
