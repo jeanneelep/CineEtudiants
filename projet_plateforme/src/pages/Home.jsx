@@ -20,6 +20,7 @@ export default function Home({ onNavigate, user, token, onProfileClick, onLogout
   const [editingCommentId, setEditingCommentId] = useState(null)
   const [editContent, setEditContent] = useState('')
   const [editLoading, setEditLoading] = useState(false)
+  const [openMenuId, setOpenMenuId] = useState(null)
 
   useEffect(() => {
     loadVideos()
@@ -30,6 +31,15 @@ export default function Home({ onNavigate, user, token, onProfileClick, onLogout
       loadVideoDetails()
     }
   }, [selectedVideo])
+
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (e.target.closest('.kebab-menu-container')) return
+      setOpenMenuId(null)
+    }
+    document.addEventListener('click', handleClickOutside)
+    return () => document.removeEventListener('click', handleClickOutside)
+  }, [])
 
   const loadVideos = async () => {
     try {
@@ -387,21 +397,36 @@ export default function Home({ onNavigate, user, token, onProfileClick, onLogout
                       <div className="comment-header">
                         <strong>{comment.user.name}</strong>
                         {user?.id === comment.userId && (
-                          <div className="comment-actions">
+                          <div className="kebab-menu-container">
                             <button
-                              className="edit-comment-btn"
-                              onClick={() => handleEditComment(comment)}
-                              title="Modifier le commentaire"
+                              className="kebab-button"
+                              onClick={() => setOpenMenuId(openMenuId === comment.id ? null : comment.id)}
+                              title="Options"
                             >
-                              ✏️
+                              •••
                             </button>
-                            <button
-                              className="delete-comment-btn"
-                              onClick={() => handleDeleteComment(comment.id)}
-                              title="Supprimer le commentaire"
-                            >
-                              🗑️
-                            </button>
+                            {openMenuId === comment.id && (
+                              <div className="kebab-menu">
+                                <button
+                                  className="kebab-item"
+                                  onClick={() => {
+                                    handleEditComment(comment)
+                                    setOpenMenuId(null)
+                                  }}
+                                >
+                                  Modifier
+                                </button>
+                                <button
+                                  className="kebab-item kebab-delete"
+                                  onClick={() => {
+                                    handleDeleteComment(comment.id)
+                                    setOpenMenuId(null)
+                                  }}
+                                >
+                                  Supprimer
+                                </button>
+                              </div>
+                            )}
                           </div>
                         )}
                       </div>

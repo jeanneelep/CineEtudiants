@@ -22,9 +22,19 @@ export default function AdminDashboard({ user, token, onLogout, onBack }) {
     duration: '',
     thumbnail: ''
   })
+  const [openMenuId, setOpenMenuId] = useState(null)
 
   useEffect(() => {
     loadDashboardData()
+  }, [])
+
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (e.target.closest('.kebab-menu-container')) return
+      setOpenMenuId(null)
+    }
+    document.addEventListener('click', handleClickOutside)
+    return () => document.removeEventListener('click', handleClickOutside)
   }, [])
 
   const loadDashboardData = async () => {
@@ -307,36 +317,59 @@ export default function AdminDashboard({ user, token, onLogout, onBack }) {
                     )}
                   </div>
                   <div className="item-actions">
-                    <button
-                      className="btn-edit"
-                      onClick={() => openEditModal(video)}
-                      title="Modifier cette vidéo"
-                    >
-                      ✏️ Modifier
-                    </button>
-                    {video.status === 'pending' && (
-                      <>
-                        <button
-                          className="btn-approve"
-                          onClick={() => handleApproveVideo(video.id)}
-                        >
-                          Approuver
-                        </button>
-                        <button
-                          className="btn-reject"
-                          onClick={() => handleRejectVideoClick(video.id)}
-                        >
-                          Rejeter
-                        </button>
-                      </>
-                    )}
-                    <button
-                      className="btn-delete"
-                      onClick={() => openConfirmModal('deleteVideo', video.id, 'video')}
-                      title="Supprimer cette vidéo"
-                    >
-                      🗑️ Supprimer
-                    </button>
+                    <div className="kebab-menu-container">
+                      <button
+                        className="kebab-button"
+                        onClick={() => setOpenMenuId(openMenuId === `video-${video.id}` ? null : `video-${video.id}`)}
+                        title="Options"
+                      >
+                        •••
+                      </button>
+                      {openMenuId === `video-${video.id}` && (
+                        <div className="kebab-menu">
+                          <button
+                            className="kebab-item"
+                            onClick={() => {
+                              openEditModal(video)
+                              setOpenMenuId(null)
+                            }}
+                          >
+                            Modifier
+                          </button>
+                          {video.status === 'pending' && (
+                            <>
+                              <button
+                                className="kebab-item"
+                                onClick={() => {
+                                  handleApproveVideo(video.id)
+                                  setOpenMenuId(null)
+                                }}
+                              >
+                                Approuver
+                              </button>
+                              <button
+                                className="kebab-item"
+                                onClick={() => {
+                                  handleRejectVideoClick(video.id)
+                                  setOpenMenuId(null)
+                                }}
+                              >
+                                Rejeter
+                              </button>
+                            </>
+                          )}
+                          <button
+                            className="kebab-item kebab-delete"
+                            onClick={() => {
+                              openConfirmModal('deleteVideo', video.id, 'video')
+                              setOpenMenuId(null)
+                            }}
+                          >
+                            Supprimer
+                          </button>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
               ))}
@@ -366,21 +399,37 @@ export default function AdminDashboard({ user, token, onLogout, onBack }) {
                   </div>
                   <div className="item-actions">
                     {comment.status === 'pending' && (
-                      <>
+                      <div className="kebab-menu-container">
                         <button
-                          className="btn-approve"
-                          onClick={() => handleApproveComment(comment.id)}
+                          className="kebab-button"
+                          onClick={() => setOpenMenuId(openMenuId === `comment-${comment.id}` ? null : `comment-${comment.id}`)}
+                          title="Options"
                         >
-                          Approuver
+                          •••
                         </button>
-                        <button
-                          className="btn-delete"
-                          onClick={() => openConfirmModal('deleteComment', comment.id, 'comment')}
-                          title="Supprimer ce commentaire"
-                        >
-                          🗑️ Supprimer
-                        </button>
-                      </>
+                        {openMenuId === `comment-${comment.id}` && (
+                          <div className="kebab-menu">
+                            <button
+                              className="kebab-item"
+                              onClick={() => {
+                                handleApproveComment(comment.id)
+                                setOpenMenuId(null)
+                              }}
+                            >
+                              Approuver
+                            </button>
+                            <button
+                              className="kebab-item kebab-delete"
+                              onClick={() => {
+                                openConfirmModal('deleteComment', comment.id, 'comment')
+                                setOpenMenuId(null)
+                              }}
+                            >
+                              Supprimer
+                            </button>
+                          </div>
+                        )}
+                      </div>
                     )}
                   </div>
                 </div>
@@ -420,13 +469,28 @@ export default function AdminDashboard({ user, token, onLogout, onBack }) {
                       <td>{new Date(user.createdAt).toLocaleDateString('fr-FR')}</td>
                       <td>
                         {user.role !== 'admin' && (
-                          <button
-                            className="btn-delete"
-                            onClick={() => openConfirmModal('deleteUser', user.id, 'user')}
-                            title="Supprimer cet utilisateur"
-                          >
-                            🗑️ Supprimer
-                          </button>
+                          <div className="kebab-menu-container">
+                            <button
+                              className="kebab-button"
+                              onClick={() => setOpenMenuId(openMenuId === `user-${user.id}` ? null : `user-${user.id}`)}
+                              title="Options"
+                            >
+                              •••
+                            </button>
+                            {openMenuId === `user-${user.id}` && (
+                              <div className="kebab-menu">
+                                <button
+                                  className="kebab-item kebab-delete"
+                                  onClick={() => {
+                                    openConfirmModal('deleteUser', user.id, 'user')
+                                    setOpenMenuId(null)
+                                  }}
+                                >
+                                  Supprimer
+                                </button>
+                              </div>
+                            )}
+                          </div>
                         )}
                       </td>
                     </tr>
