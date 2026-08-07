@@ -1,8 +1,29 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { api } from '../api'
 import Footer from '../components/Footer'
 import '../styles/Profile.css'
 
 export default function Profile({ user, onBack, onUploadClick }) {
+  const [profile, setProfile] = useState(null)
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    if (user?.id) {
+      loadProfile()
+    }
+  }, [user?.id])
+
+  const loadProfile = async () => {
+    try {
+      const data = await api.getUserProfile(user.id)
+      setProfile(data)
+    } catch (err) {
+      console.error('Erreur chargement profil:', err)
+    } finally {
+      setLoading(false)
+    }
+  }
+
   return (
     <div className="profile-container">
       <header className="profile-header">
@@ -24,23 +45,27 @@ export default function Profile({ user, onBack, onUploadClick }) {
             </div>
           </div>
 
-          <div className="stats-section">
-            <h3>Statistiques</h3>
-            <div className="stats-grid">
-              <div className="stat-card">
-                <div className="stat-number">0</div>
-                <div className="stat-label">Films uploadés</div>
-              </div>
-              <div className="stat-card">
-                <div className="stat-number">0</div>
-                <div className="stat-label">Vues totales</div>
-              </div>
-              <div className="stat-card">
-                <div className="stat-number">0</div>
-                <div className="stat-label">Likes reçus</div>
+          {loading ? (
+            <div style={{padding: '2rem', textAlign: 'center', color: '#cbd5e1'}}>Chargement...</div>
+          ) : (
+            <div className="stats-section">
+              <h3>Statistiques</h3>
+              <div className="stats-grid">
+                <div className="stat-card">
+                  <div className="stat-number">{profile?.stats?.videoCount || 0}</div>
+                  <div className="stat-label">Films uploadés</div>
+                </div>
+                <div className="stat-card">
+                  <div className="stat-number">{profile?.videos?.length || 0}</div>
+                  <div className="stat-label">Vues totales</div>
+                </div>
+                <div className="stat-card">
+                  <div className="stat-number">{profile?.stats?.likesReceived || 0}</div>
+                  <div className="stat-label">Likes reçus</div>
+                </div>
               </div>
             </div>
-          </div>
+          )}
 
           <div className="actions-section">
             <h3>Actions</h3>
