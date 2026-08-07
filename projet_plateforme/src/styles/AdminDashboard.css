@@ -412,6 +412,100 @@
   justify-content: flex-end;
 }
 
+/* Delete button */
+.btn-delete {
+  background-color: #f44336;
+  color: white;
+  padding: 8px 16px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.btn-delete:hover {
+  background-color: #da190b;
+}
+
+.btn-confirm-delete {
+  background-color: #f44336;
+  color: white;
+  padding: 8px 16px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.btn-confirm-delete:hover {
+  background-color: #da190b;
+}
+
+/* Users list */
+.users-list {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 20px;
+  overflow-x: auto;
+}
+
+.users-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.users-table thead {
+  border-bottom: 2px solid rgba(102, 126, 234, 0.3);
+}
+
+.users-table th {
+  text-align: left;
+  padding: 15px;
+  font-weight: 600;
+  color: var(--text-primary, #fff);
+}
+
+.users-table td {
+  padding: 12px 15px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  color: var(--text-secondary, #aaa);
+}
+
+.users-table tr:hover {
+  background-color: rgba(102, 126, 234, 0.05);
+}
+
+.role-badge {
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  display: inline-block;
+}
+
+.role-badge.admin {
+  background-color: rgba(102, 126, 234, 0.2);
+  color: #667eea;
+}
+
+.role-badge.user {
+  background-color: rgba(76, 175, 80, 0.2);
+  color: #4caf50;
+}
+
+/* Modal with text */
+.modal-content p {
+  margin: 0 0 20px 0;
+  color: var(--text-secondary, #aaa);
+  font-size: 14px;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
   .admin-header {

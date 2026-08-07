@@ -207,5 +207,36 @@ export const api = {
       headers: { 'Authorization': `Bearer ${token}` }
     })
     return res.json()
+  },
+
+  deleteVideo: async (token, videoId) => {
+    const res = await fetch(`${API_URL}/admin/videos/${videoId}`, {
+      method: 'DELETE',
+      headers: { 'Authorization': `Bearer ${token}` }
+    })
+    return res.json()
+  },
+
+  deleteComment: async (token, commentId) => {
+    const res = await fetch(`${API_URL}/admin/comments/${commentId}`, {
+      method: 'DELETE',
+      headers: { 'Authorization': `Bearer ${token}` }
+    })
+    return res.json()
+  },
+
+  getAdminUsers: async (token) => {
+    const res = await fetch(`${API_URL}/admin/users`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    })
+    return res.json()
+  },
+
+  deleteUser: async (token, userId) => {
+    const res = await fetch(`${API_URL}/admin/users/${userId}`, {
+      method: 'DELETE',
+      headers: { 'Authorization': `Bearer ${token}` }
+    })
+    return res.json()
   }
 }

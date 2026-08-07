@@ -178,3 +178,128 @@ export const rejectComment = async (req: AuthRequest, res: Response) => {
     res.status(500).json({ error: 'Failed to reject comment' })
   }
 }
+
+// GET /api/admin/users - Liste tous les utilisateurs
+export const getAdminUsers = async (req: AuthRequest, res: Response) => {
+  try {
+    const users = await prisma.user.findMany({
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        role: true,
+        createdAt: true
+      },
+      orderBy: { createdAt: 'desc' }
+    })
+
+    res.json(users)
+  } catch (error) {
+    console.error('Users fetch error:', error)
+    res.status(500).json({ error: 'Failed to fetch users' })
+  }
+}
+
+// DELETE /api/admin/users/:userId - Supprime un utilisateur
+export const deleteUser = async (req: AuthRequest, res: Response) => {
+  try {
+    const { userId } = req.params as { userId: string }
+
+    // Vérifier que l'utilisateur n'est pas un admin
+    const user = await prisma.user.findUnique({
+      where: { id: userId }
+    })
+
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' })
+    }
+
+    if (user.role === 'admin') {
+      return res.status(403).json({ error: 'Cannot delete admin users' })
+    }
+
+    // Supprimer les commentaires de l'utilisateur
+    await prisma.comment.deleteMany({
+      where: { userId }
+    })
+
+    // Supprimer les likes de l'utilisateur
+    await prisma.like.deleteMany({
+      where: { userId }
+    })
+
+    // Supprimer les vidéos de l'utilisateur
+    await prisma.video.deleteMany({
+      where: { creatorId: userId }
+    })
+
+    // Supprimer l'utilisateur
+    await prisma.user.delete({
+      where: { id: userId }
+    })
+
+    res.json({ message: 'Supprimé avec succès' })
+  } catch (error) {
+    console.error('Delete user error:', error)
+    res.status(500).json({ error: 'Failed to delete user' })
+  }
+}
+
+// DELETE /api/admin/videos/:videoId - Supprime une vidéo
+export const deleteVideo = async (req: AuthRequest, res: Response) => {
+  try {
+    const { videoId } = req.params as { videoId: string }
+
+    const video = await prisma.video.findUnique({
+      where: { id: videoId }
+    })
+
+    if (!video) {
+      return res.status(404).json({ error: 'Video not found' })
+    }
+
+    // Supprimer les commentaires de la vidéo
+    await prisma.comment.deleteMany({
+      where: { videoId }
+    })
+
+    // Supprimer les likes de la vidéo
+    await prisma.like.deleteMany({
+      where: { videoId }
+    })
+
+    // Supprimer la vidéo
+    await prisma.video.delete({
+      where: { id: videoId }
+    })
+
+    res.json({ message: 'Supprimé avec succès' })
+  } catch (error) {
+    console.error('Delete video error:', error)
+    res.status(500).json({ error: 'Failed to delete video' })
+  }
+}
+
+// DELETE /api/admin/comments/:commentId - Supprime un commentaire
+export const deleteComment = async (req: AuthRequest, res: Response) => {
+  try {
+    const { commentId } = req.params as { commentId: string }
+
+    const comment = await prisma.comment.findUnique({
+      where: { id: commentId }
+    })
+
+    if (!comment) {
+      return res.status(404).json({ error: 'Comment not found' })
+    }
+
+    await prisma.comment.delete({
+      where: { id: commentId }
+    })
+
+    res.json({ message: 'Supprimé avec succès' })
+  } catch (error) {
+    console.error('Delete comment error:', error)
+    res.status(500).json({ error: 'Failed to delete comment' })
+  }
+}

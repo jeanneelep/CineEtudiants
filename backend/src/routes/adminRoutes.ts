@@ -8,7 +8,11 @@ import {
   rejectVideo,
   getAdminComments,
   approveComment,
-  rejectComment
+  rejectComment,
+  getAdminUsers,
+  deleteUser,
+  deleteVideo,
+  deleteComment
 } from '../controllers/adminController'
 
 const router = Router()
@@ -24,10 +28,16 @@ router.get('/stats', getAdminStats)
 router.get('/videos', getAdminVideos)
 router.put('/videos/:videoId/approve', approveVideo)
 router.put('/videos/:videoId/reject', rejectVideo)
+router.delete('/videos/:videoId', deleteVideo)
 
 // Routes commentaires
 router.get('/comments', getAdminComments)
 router.put('/comments/:commentId/approve', approveComment)
 router.put('/comments/:commentId/reject', rejectComment)
+router.delete('/comments/:commentId', deleteComment)
+
+// Routes utilisateurs
+router.get('/users', getAdminUsers)
+router.delete('/users/:userId', deleteUser)
 
 export default router

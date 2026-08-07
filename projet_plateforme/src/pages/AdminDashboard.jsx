@@ -6,11 +6,14 @@ export default function AdminDashboard({ user, token, onLogout, onBack }) {
   const [stats, setStats] = useState(null)
   const [videos, setVideos] = useState([])
   const [comments, setComments] = useState([])
+  const [users, setUsers] = useState([])
   const [activeTab, setActiveTab] = useState('stats')
   const [loading, setLoading] = useState(true)
   const [rejectReason, setRejectReason] = useState('')
   const [rejectingVideoId, setRejectingVideoId] = useState(null)
   const [showRejectModal, setShowRejectModal] = useState(false)
+  const [showConfirmModal, setShowConfirmModal] = useState(false)
+  const [confirmAction, setConfirmAction] = useState(null)
 
   useEffect(() => {
     loadDashboardData()
@@ -27,6 +30,9 @@ export default function AdminDashboard({ user, token, onLogout, onBack }) {
 
       const commentsData = await api.getAdminComments(token)
       setComments(Array.isArray(commentsData) ? commentsData : [])
+
+      const usersData = await api.getAdminUsers(token)
+      setUsers(Array.isArray(usersData) ? usersData : [])
     } catch (err) {
       console.error('Erreur chargement dashboard:', err)
       alert('Erreur lors du chargement du dashboard')
@@ -91,6 +97,37 @@ export default function AdminDashboard({ user, token, onLogout, onBack }) {
     }
   }
 
+  const openConfirmModal = (action, id, type) => {
+    setConfirmAction({ action, id, type })
+    setShowConfirmModal(true)
+  }
+
+  const handleConfirmDelete = async () => {
+    if (!confirmAction) return
+
+    try {
+      const { action, id, type } = confirmAction
+
+      if (action === 'deleteVideo') {
+        await api.deleteVideo(token, id)
+      } else if (action === 'deleteComment') {
+        await api.deleteComment(token, id)
+      } else if (action === 'deleteUser') {
+        await api.deleteUser(token, id)
+      }
+
+      alert('Supprimé avec succès!')
+      setShowConfirmModal(false)
+      setConfirmAction(null)
+      loadDashboardData()
+    } catch (err) {
+      console.error('Erreur suppression:', err)
+      alert('Erreur lors de la suppression')
+      setShowConfirmModal(false)
+      setConfirmAction(null)
+    }
+  }
+
   if (loading) {
     return <div className="admin-dashboard loading">Chargement...</div>
   }
@@ -124,6 +161,12 @@ export default function AdminDashboard({ user, token, onLogout, onBack }) {
           onClick={() => setActiveTab('comments')}
         >
           Modération Commentaires
+        </button>
+        <button
+          className={`tab ${activeTab === 'users' ? 'active' : ''}`}
+          onClick={() => setActiveTab('users')}
+        >
+          Utilisateurs
         </button>
       </div>
 
@@ -210,6 +253,13 @@ export default function AdminDashboard({ user, token, onLogout, onBack }) {
                         </button>
                       </>
                     )}
+                    <button
+                      className="btn-delete"
+                      onClick={() => openConfirmModal('deleteVideo', video.id, 'video')}
+                      title="Supprimer cette vidéo"
+                    >
+                      🗑️ Supprimer
+                    </button>
                   </div>
                 </div>
               ))}
@@ -247,10 +297,11 @@ export default function AdminDashboard({ user, token, onLogout, onBack }) {
                           Approuver
                         </button>
                         <button
-                          className="btn-reject"
-                          onClick={() => handleRejectComment(comment.id)}
+                          className="btn-delete"
+                          onClick={() => openConfirmModal('deleteComment', comment.id, 'comment')}
+                          title="Supprimer ce commentaire"
                         >
-                          Supprimer
+                          🗑️ Supprimer
                         </button>
                       </>
                     )}
@@ -259,6 +310,80 @@ export default function AdminDashboard({ user, token, onLogout, onBack }) {
               ))}
             </div>
           )}
+        </div>
+      )}
+
+      {activeTab === 'users' && (
+        <div className="tab-content moderation-content">
+          <h2>Gestion des Utilisateurs</h2>
+          {users.length === 0 ? (
+            <p className="empty-message">Aucun utilisateur</p>
+          ) : (
+            <div className="users-list">
+              <table className="users-table">
+                <thead>
+                  <tr>
+                    <th>Email</th>
+                    <th>Nom</th>
+                    <th>Rôle</th>
+                    <th>Date d'inscription</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {users.map(user => (
+                    <tr key={user.id}>
+                      <td>{user.email}</td>
+                      <td>{user.name}</td>
+                      <td>
+                        <span className={`role-badge ${user.role}`}>
+                          {user.role === 'admin' ? 'Admin' : 'Utilisateur'}
+                        </span>
+                      </td>
+                      <td>{new Date(user.createdAt).toLocaleDateString('fr-FR')}</td>
+                      <td>
+                        {user.role !== 'admin' && (
+                          <button
+                            className="btn-delete"
+                            onClick={() => openConfirmModal('deleteUser', user.id, 'user')}
+                            title="Supprimer cet utilisateur"
+                          >
+                            🗑️ Supprimer
+                          </button>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      )}
+
+      {showConfirmModal && (
+        <div className="modal-overlay">
+          <div className="modal-content">
+            <h3>Êtes-vous sûr?</h3>
+            <p>Cette action est irréversible.</p>
+            <div className="modal-actions">
+              <button
+                className="btn-cancel"
+                onClick={() => {
+                  setShowConfirmModal(false)
+                  setConfirmAction(null)
+                }}
+              >
+                Annuler
+              </button>
+              <button
+                className="btn-confirm-delete"
+                onClick={handleConfirmDelete}
+              >
+                Supprimer
+              </button>
+            </div>
+          </div>
         </div>
       )}
 

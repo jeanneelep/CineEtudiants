@@ -38,7 +38,7 @@ export const register = async (req: AuthRequest, res: Response) => {
 
     res.status(201).json({
       message: 'Registration successful. Check your email for verification code.',
-      user: { id: user.id, email: user.email, name: user.name, emailVerified: false },
+      user: { id: user.id, email: user.email, name: user.name, emailVerified: false, role: user.role },
       ...(process.env.NODE_ENV !== 'production' && { devVerificationCode: verificationCode })
     })
   } catch (error) {
@@ -84,7 +84,7 @@ export const verifyEmail = async (req: AuthRequest, res: Response) => {
 
     res.json({
       message: 'Email verified successfully',
-      user: { id: updatedUser.id, email: updatedUser.email, name: updatedUser.name, emailVerified: true },
+      user: { id: updatedUser.id, email: updatedUser.email, name: updatedUser.name, emailVerified: true, role: updatedUser.role },
       token
     })
   } catch (error) {
@@ -145,7 +145,8 @@ export const login = async (req: AuthRequest, res: Response) => {
         id: user.id,
         email: user.email,
         name: user.name,
-        emailVerified: user.emailVerified
+        emailVerified: user.emailVerified,
+        role: user.role
       },
       token
     })
