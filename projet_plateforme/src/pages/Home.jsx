@@ -17,6 +17,9 @@ export default function Home({ onNavigate, user, token, onProfileClick, onLogout
   const [replyingTo, setReplyingTo] = useState(null)
   const [replyContent, setReplyContent] = useState('')
   const [replyLoading, setReplyLoading] = useState(false)
+  const [editingCommentId, setEditingCommentId] = useState(null)
+  const [editContent, setEditContent] = useState('')
+  const [editLoading, setEditLoading] = useState(false)
 
   useEffect(() => {
     loadVideos()
@@ -116,8 +119,42 @@ export default function Home({ onNavigate, user, token, onProfileClick, onLogout
     }
   }
 
+  const handleEditComment = (comment) => {
+    setEditingCommentId(comment.id)
+    setEditContent(comment.content)
+  }
+
+  const handleCancelEdit = () => {
+    setEditingCommentId(null)
+    setEditContent('')
+  }
+
+  const handleSaveEdit = async (commentId) => {
+    if (!token || !editContent.trim()) {
+      alert('Le contenu du commentaire ne peut pas être vide')
+      return
+    }
+
+    setEditLoading(true)
+    try {
+      const result = await api.editComment(token, commentId, editContent)
+      if (result.error) {
+        alert('Erreur: ' + result.error)
+      } else {
+        setEditingCommentId(null)
+        setEditContent('')
+        await loadVideoDetails()
+      }
+    } catch (err) {
+      console.error('Erreur édition:', err)
+      alert('Erreur lors de la modification: ' + err.message)
+    } finally {
+      setEditLoading(false)
+    }
+  }
+
   const handleDeleteComment = async (commentId) => {
-    if (!user) return
+    if (!user || !window.confirm('Êtes-vous sûr de vouloir supprimer ce commentaire ?')) return
     try {
       const token = localStorage.getItem('token')
       await api.deleteComment(token, commentId)
@@ -350,20 +387,58 @@ export default function Home({ onNavigate, user, token, onProfileClick, onLogout
                       <div className="comment-header">
                         <strong>{comment.user.name}</strong>
                         {user?.id === comment.userId && (
-                          <button
-                            className="delete-comment-btn"
-                            onClick={() => handleDeleteComment(comment.id)}
-                          >
-                            ✕
-                          </button>
+                          <div className="comment-actions">
+                            <button
+                              className="edit-comment-btn"
+                              onClick={() => handleEditComment(comment)}
+                              title="Modifier le commentaire"
+                            >
+                              ✏️
+                            </button>
+                            <button
+                              className="delete-comment-btn"
+                              onClick={() => handleDeleteComment(comment.id)}
+                              title="Supprimer le commentaire"
+                            >
+                              🗑️
+                            </button>
+                          </div>
                         )}
                       </div>
-                      <p className="comment-text">{comment.content}</p>
+
+                      {editingCommentId === comment.id ? (
+                        <div className="comment-edit-form">
+                          <textarea
+                            value={editContent}
+                            onChange={(e) => setEditContent(e.target.value)}
+                            className="edit-input"
+                            placeholder="Modifier votre commentaire..."
+                          />
+                          <div className="edit-buttons">
+                            <button
+                              onClick={() => handleSaveEdit(comment.id)}
+                              disabled={editLoading || !editContent.trim()}
+                              className="edit-save-btn"
+                            >
+                              {editLoading ? 'Sauvegarde...' : 'Sauvegarder'}
+                            </button>
+                            <button
+                              onClick={handleCancelEdit}
+                              className="edit-cancel-btn"
+                            >
+                              Annuler
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        <p className="comment-text">{comment.content}</p>
+                      )}
+
                       <div className="comment-footer">
                         <p className="comment-date">
                           {new Date(comment.createdAt).toLocaleDateString('fr-FR')}
                         </p>
-                        {user && (
+                        {user && !editingCommentId && (
                           <button
                             className="reply-btn"
                             onClick={() => setReplyingTo(replyingTo === comment.id ? null : comment.id)}

@@ -54,6 +54,42 @@ export const createComment = async (req: AuthRequest, res: Response) => {
   }
 }
 
+export const editComment = async (req: AuthRequest, res: Response) => {
+  try {
+    const { commentId } = req.params as { commentId: string }
+    const { content } = req.body
+    const userId = req.userId
+
+    if (!userId) {
+      return res.status(401).json({ error: 'Not authenticated' })
+    }
+
+    if (!content || typeof content !== 'string' || content.trim().length === 0) {
+      return res.status(400).json({ error: 'Comment content is required' })
+    }
+
+    const comment = await prisma.comment.findUnique({ where: { id: commentId } })
+
+    if (!comment) {
+      return res.status(404).json({ error: 'Comment not found' })
+    }
+
+    if (comment.userId !== userId) {
+      return res.status(403).json({ error: 'Cannot edit comment' })
+    }
+
+    const updatedComment = await prisma.comment.update({
+      where: { id: commentId },
+      data: { content: content.trim() },
+      include: { user: { select: { id: true, name: true, avatar: true } } }
+    })
+
+    res.json({ ...updatedComment, updated: true })
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to edit comment' })
+  }
+}
+
 export const deleteComment = async (req: AuthRequest, res: Response) => {
   try {
     const { commentId } = req.params as { commentId: string }

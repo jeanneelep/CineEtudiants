@@ -83,6 +83,18 @@ export const api = {
     return res.json()
   },
 
+  editComment: async (token, commentId, content) => {
+    const res = await fetch(`${API_URL}/videos/comment/${commentId}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({ content })
+    })
+    return res.json()
+  },
+
   deleteComment: async (token, commentId) => {
     const res = await fetch(`${API_URL}/videos/comment/${commentId}`, {
       method: 'DELETE',
