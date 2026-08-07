@@ -14,6 +14,14 @@ export default function AdminDashboard({ user, token, onLogout, onBack }) {
   const [showRejectModal, setShowRejectModal] = useState(false)
   const [showConfirmModal, setShowConfirmModal] = useState(false)
   const [confirmAction, setConfirmAction] = useState(null)
+  const [editingVideo, setEditingVideo] = useState(null)
+  const [editFormData, setEditFormData] = useState({
+    title: '',
+    description: '',
+    category: '',
+    duration: '',
+    thumbnail: ''
+  })
 
   useEffect(() => {
     loadDashboardData()
@@ -72,6 +80,68 @@ export default function AdminDashboard({ user, token, onLogout, onBack }) {
     } catch (err) {
       console.error('Erreur rejet vidéo:', err)
       alert('Erreur lors du rejet')
+    }
+  }
+
+  const openEditModal = (video) => {
+    setEditingVideo(video)
+    setEditFormData({
+      title: video.title || '',
+      description: video.description || '',
+      category: video.category || '',
+      duration: video.duration || '',
+      thumbnail: video.thumbnail || ''
+    })
+  }
+
+  const closeEditModal = () => {
+    setEditingVideo(null)
+    setEditFormData({
+      title: '',
+      description: '',
+      category: '',
+      duration: '',
+      thumbnail: ''
+    })
+  }
+
+  const handleEditVideoChange = (e) => {
+    const { name, value } = e.target
+    setEditFormData(prev => ({
+      ...prev,
+      [name]: value
+    }))
+  }
+
+  const handleSaveVideo = async () => {
+    if (!editFormData.title.trim()) {
+      alert('Le titre est requis')
+      return
+    }
+
+    try {
+      const dataToSend = {
+        title: editFormData.title.trim(),
+        description: editFormData.description.trim(),
+        category: editFormData.category.trim(),
+        duration: editFormData.duration ? parseInt(editFormData.duration) : undefined,
+        thumbnail: editFormData.thumbnail.trim()
+      }
+
+      // Remove undefined fields
+      Object.keys(dataToSend).forEach(key => {
+        if (dataToSend[key] === '' || dataToSend[key] === undefined) {
+          delete dataToSend[key]
+        }
+      })
+
+      await api.editVideo(token, editingVideo.id, dataToSend)
+      alert('Vidéo modifiée avec succès!')
+      closeEditModal()
+      loadDashboardData()
+    } catch (err) {
+      console.error('Erreur modification vidéo:', err)
+      alert('Erreur lors de la modification')
     }
   }
 
@@ -237,6 +307,13 @@ export default function AdminDashboard({ user, token, onLogout, onBack }) {
                     )}
                   </div>
                   <div className="item-actions">
+                    <button
+                      className="btn-edit"
+                      onClick={() => openEditModal(video)}
+                      title="Modifier cette vidéo"
+                    >
+                      ✏️ Modifier
+                    </button>
                     {video.status === 'pending' && (
                       <>
                         <button
@@ -409,6 +486,94 @@ export default function AdminDashboard({ user, token, onLogout, onBack }) {
                 onClick={handleRejectVideoConfirm}
               >
                 Confirmer
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {editingVideo && (
+        <div className="modal-overlay">
+          <div className="modal-content edit-modal">
+            <h3>Modifier la vidéo</h3>
+            <div className="form-group">
+              <label>Titre</label>
+              <input
+                type="text"
+                name="title"
+                value={editFormData.title}
+                onChange={handleEditVideoChange}
+                placeholder="Titre de la vidéo"
+                className="form-input"
+              />
+            </div>
+            <div className="form-group">
+              <label>Description</label>
+              <textarea
+                name="description"
+                value={editFormData.description}
+                onChange={handleEditVideoChange}
+                placeholder="Description de la vidéo"
+                className="form-textarea"
+                rows="4"
+              />
+            </div>
+            <div className="form-row">
+              <div className="form-group">
+                <label>Catégorie</label>
+                <select
+                  name="category"
+                  value={editFormData.category}
+                  onChange={handleEditVideoChange}
+                  className="form-select"
+                >
+                  <option value="">-- Sélectionner une catégorie --</option>
+                  <option value="Drame">Drame</option>
+                  <option value="Animation">Animation</option>
+                  <option value="Comédie">Comédie</option>
+                  <option value="Action">Action</option>
+                  <option value="Horreur">Horreur</option>
+                  <option value="Romance">Romance</option>
+                  <option value="Documentaire">Documentaire</option>
+                  <option value="Autre">Autre</option>
+                </select>
+              </div>
+              <div className="form-group">
+                <label>Durée (secondes)</label>
+                <input
+                  type="number"
+                  name="duration"
+                  value={editFormData.duration}
+                  onChange={handleEditVideoChange}
+                  placeholder="300"
+                  className="form-input"
+                  min="0"
+                />
+              </div>
+            </div>
+            <div className="form-group">
+              <label>URL Thumbnail (optionnel)</label>
+              <input
+                type="text"
+                name="thumbnail"
+                value={editFormData.thumbnail}
+                onChange={handleEditVideoChange}
+                placeholder="https://..."
+                className="form-input"
+              />
+            </div>
+            <div className="modal-actions">
+              <button
+                className="btn-cancel"
+                onClick={closeEditModal}
+              >
+                Annuler
+              </button>
+              <button
+                className="btn-confirm"
+                onClick={handleSaveVideo}
+              >
+                Sauvegarder
               </button>
             </div>
           </div>

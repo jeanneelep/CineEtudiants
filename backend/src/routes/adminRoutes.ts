@@ -6,6 +6,7 @@ import {
   getAdminVideos,
   approveVideo,
   rejectVideo,
+  editVideo,
   getAdminComments,
   approveComment,
   rejectComment,
@@ -28,6 +29,7 @@ router.get('/stats', getAdminStats)
 router.get('/videos', getAdminVideos)
 router.put('/videos/:videoId/approve', approveVideo)
 router.put('/videos/:videoId/reject', rejectVideo)
+router.put('/videos/:videoId', editVideo)
 router.delete('/videos/:videoId', deleteVideo)
 
 // Routes commentaires

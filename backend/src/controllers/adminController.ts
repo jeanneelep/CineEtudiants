@@ -303,3 +303,84 @@ export const deleteComment = async (req: AuthRequest, res: Response) => {
     res.status(500).json({ error: 'Failed to delete comment' })
   }
 }
+
+// PUT /api/admin/videos/:videoId - Modifie une vidéo
+export const editVideo = async (req: AuthRequest, res: Response) => {
+  try {
+    const { videoId } = req.params as { videoId: string }
+    const { title, description, category, duration, thumbnail } = req.body
+
+    // Vérifier que la vidéo existe
+    const video = await prisma.video.findUnique({
+      where: { id: videoId }
+    })
+
+    if (!video) {
+      return res.status(404).json({ error: 'Video not found' })
+    }
+
+    // Valider les champs optionnels
+    const updateData: any = {}
+
+    if (title !== undefined) {
+      if (typeof title !== 'string' || !title.trim()) {
+        return res.status(400).json({ error: 'Title must be a non-empty string' })
+      }
+      updateData.title = title.trim()
+    }
+
+    if (description !== undefined) {
+      if (typeof description !== 'string') {
+        return res.status(400).json({ error: 'Description must be a string' })
+      }
+      updateData.description = description.trim()
+    }
+
+    if (category !== undefined) {
+      if (typeof category !== 'string' || !category.trim()) {
+        return res.status(400).json({ error: 'Category must be a non-empty string' })
+      }
+      updateData.category = category.trim()
+    }
+
+    if (duration !== undefined) {
+      if (typeof duration !== 'number' || duration < 0) {
+        return res.status(400).json({ error: 'Duration must be a positive number' })
+      }
+      updateData.duration = duration
+    }
+
+    if (thumbnail !== undefined) {
+      if (typeof thumbnail !== 'string') {
+        return res.status(400).json({ error: 'Thumbnail must be a string' })
+      }
+      updateData.thumbnail = thumbnail.trim()
+    }
+
+    // Si aucun champ à mettre à jour
+    if (Object.keys(updateData).length === 0) {
+      return res.status(400).json({ error: 'No fields to update' })
+    }
+
+    // Mettre à jour la vidéo
+    const updatedVideo = await prisma.video.update({
+      where: { id: videoId },
+      data: updateData,
+      include: {
+        creator: { select: { id: true, name: true, email: true } },
+        _count: { select: { likes: true, comments: true } }
+      }
+    })
+
+    const enrichedVideo = {
+      ...updatedVideo,
+      views: updatedVideo._count?.likes || 0,
+      commentCount: updatedVideo._count?.comments || 0
+    }
+
+    res.json({ message: 'Video updated successfully', video: enrichedVideo })
+  } catch (error) {
+    console.error('Edit video error:', error)
+    res.status(500).json({ error: 'Failed to edit video' })
+  }
+}

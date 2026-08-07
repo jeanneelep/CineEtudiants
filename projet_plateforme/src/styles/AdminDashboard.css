@@ -603,3 +603,136 @@
     --text-secondary: #666666;
   }
 }
+
+/* Edit Button */
+.btn-edit {
+  background-color: #2196F3;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: background-color 0.3s ease;
+}
+
+.btn-edit:hover {
+  background-color: #1976D2;
+}
+
+/* Edit Modal */
+.edit-modal {
+  max-width: 600px;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.edit-modal h3 {
+  margin-top: 0;
+  margin-bottom: 20px;
+  font-size: 22px;
+}
+
+/* Form Groups */
+.form-group {
+  margin-bottom: 20px;
+  display: flex;
+  flex-direction: column;
+}
+
+.form-group label {
+  margin-bottom: 8px;
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--text-primary, #333);
+}
+
+.form-input,
+.form-textarea,
+.form-select {
+  padding: 10px 12px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 14px;
+  font-family: inherit;
+  background: var(--bg-input, #ffffff);
+  color: var(--text-primary, #333);
+  transition: border-color 0.3s ease;
+}
+
+.form-input:focus,
+.form-textarea:focus,
+.form-select:focus {
+  outline: none;
+  border-color: #2196F3;
+  box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.1);
+}
+
+.form-textarea {
+  resize: vertical;
+  min-height: 100px;
+}
+
+.form-select {
+  cursor: pointer;
+}
+
+/* Form Row for multiple inputs side by side */
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+@media (max-width: 600px) {
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+
+  .edit-modal {
+    max-width: 95vw;
+    max-height: 95vh;
+    padding: 20px;
+  }
+}
+
+/* Light mode form styles */
+@media (prefers-color-scheme: light) {
+  .form-input,
+  .form-textarea,
+  .form-select {
+    background: #ffffff;
+    border-color: #ddd;
+    color: #333;
+  }
+
+  .form-input:focus,
+  .form-textarea:focus,
+  .form-select:focus {
+    border-color: #2196F3;
+  }
+}
+
+/* Dark mode form styles */
+@media (prefers-color-scheme: dark) {
+  .form-input,
+  .form-textarea,
+  .form-select {
+    background: #2a2a2a;
+    border-color: #444;
+    color: #ffffff;
+  }
+
+  .form-input::placeholder,
+  .form-textarea::placeholder {
+    color: #999;
+  }
+
+  .form-input:focus,
+  .form-textarea:focus,
+  .form-select:focus {
+    border-color: #64B5F6;
+    box-shadow: 0 0 0 3px rgba(100, 181, 246, 0.15);
+  }
+}
