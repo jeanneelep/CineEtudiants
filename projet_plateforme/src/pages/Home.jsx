@@ -198,9 +198,6 @@ export default function Home({ onNavigate, user, token, onProfileClick, onLogout
                 <button className="user-profile-btn" onClick={onProfileClick}>
                   {user.name.substring(0, 2).toUpperCase()}
                 </button>
-                <button className="logout-btn" onClick={onLogout} title="Déconnexion">
-                  🚪
-                </button>
               </div>
             ) : (
               <button className="login-btn">Se connecter</button>

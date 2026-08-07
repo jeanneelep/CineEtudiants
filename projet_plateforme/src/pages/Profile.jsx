@@ -3,7 +3,7 @@ import { api } from '../api'
 import Footer from '../components/Footer'
 import '../styles/Profile.css'
 
-export default function Profile({ user, onBack, onUploadClick }) {
+export default function Profile({ user, onBack, onUploadClick, onLogout }) {
   const [profile, setProfile] = useState(null)
   const [loading, setLoading] = useState(true)
 
@@ -74,6 +74,9 @@ export default function Profile({ user, onBack, onUploadClick }) {
             </button>
             <button className="action-btn secondary">
               ⚙️ Paramètres du compte
+            </button>
+            <button className="action-btn logout-btn" onClick={onLogout}>
+              🚪 Se déconnecter
             </button>
           </div>
 

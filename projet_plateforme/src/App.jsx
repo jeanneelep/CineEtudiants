@@ -79,6 +79,7 @@ function App() {
           user={user}
           onBack={() => setCurrentPage('home')}
           onUploadClick={() => setCurrentPage('upload')}
+          onLogout={handleLogout}
         />
       )
     }
