@@ -41,5 +41,68 @@ export const api = {
       body: JSON.stringify(videoData)
     })
     return res.json()
+  },
+
+  // Comments
+  getVideoComments: async (videoId) => {
+    const res = await fetch(`${API_URL}/videos/${videoId}/comments`)
+    return res.json()
+  },
+
+  createComment: async (token, videoId, content) => {
+    const res = await fetch(`${API_URL}/videos/${videoId}/comments`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({ content })
+    })
+    return res.json()
+  },
+
+  deleteComment: async (token, commentId) => {
+    const res = await fetch(`${API_URL}/videos/comment/${commentId}`, {
+      method: 'DELETE',
+      headers: { 'Authorization': `Bearer ${token}` }
+    })
+    return res.json()
+  },
+
+  // Likes
+  getVideoLikes: async (videoId) => {
+    const res = await fetch(`${API_URL}/videos/${videoId}/likes`)
+    return res.json()
+  },
+
+  toggleLike: async (token, videoId) => {
+    const res = await fetch(`${API_URL}/videos/${videoId}/likes`, {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${token}` }
+    })
+    return res.json()
+  },
+
+  // User Profile
+  getUserProfile: async (userId) => {
+    const res = await fetch(`${API_URL}/users/${userId}`)
+    return res.json()
+  },
+
+  getUserVideos: async (userId) => {
+    const res = await fetch(`${API_URL}/users/${userId}/videos`)
+    return res.json()
+  },
+
+  updateUserProfile: async (token, userId, profileData) => {
+    const res = await fetch(`${API_URL}/users/${userId}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify(profileData)
+    })
+    return res.json()
   }
 }
