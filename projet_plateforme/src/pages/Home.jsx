@@ -63,19 +63,32 @@ export default function Home({ onNavigate, user, onProfileClick }) {
 
   const handleAddComment = async () => {
     if (!user) {
-      alert('Veuillez vous connecter')
+      alert('Veuillez vous connecter pour commenter')
       return
     }
-    if (!newComment.trim()) return
+    if (!newComment.trim()) {
+      alert('Veuillez écrire un commentaire')
+      return
+    }
 
     setCommentLoading(true)
     try {
       const token = localStorage.getItem('token')
-      await api.createComment(token, selectedVideo.id, newComment)
-      setNewComment('')
-      await loadVideoDetails()
+      if (!token) {
+        alert('Token manquant. Reconnectez-vous.')
+        setCommentLoading(false)
+        return
+      }
+      const result = await api.createComment(token, selectedVideo.id, newComment)
+      if (result.error) {
+        alert('Erreur: ' + result.error)
+      } else {
+        setNewComment('')
+        await loadVideoDetails()
+      }
     } catch (err) {
       console.error('Erreur commentaire:', err)
+      alert('Erreur lors de l\'envoi du commentaire: ' + err.message)
     } finally {
       setCommentLoading(false)
     }
@@ -102,6 +115,11 @@ export default function Home({ onNavigate, user, onProfileClick }) {
   const getCreatorName = (creator) => {
     if (typeof creator === 'string') return creator
     return creator?.name || 'Inconnu'
+  }
+
+  const getVideoUrl = (url) => {
+    if (url.startsWith('http')) return url
+    return `http://localhost:5000${url}`
   }
 
   const recentVideos = [...videos].reverse()
@@ -230,7 +248,7 @@ export default function Home({ onNavigate, user, onProfileClick }) {
           <div className="modal modal-large" onClick={(e) => e.stopPropagation()}>
             <button className="modal-close" onClick={() => setSelectedVideo(null)}>✕</button>
             <div className="video-container">
-              <video src={selectedVideo.url} controls autoPlay className="video-player" />
+              <video src={getVideoUrl(selectedVideo.url)} controls autoPlay className="video-player" />
             </div>
             <div className="video-info">
               <h2>{selectedVideo.title}</h2>
