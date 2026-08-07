@@ -112,6 +112,10 @@ export const api = {
       method: 'DELETE',
       headers: { 'Authorization': `Bearer ${token}` }
     })
+    if (!res.ok) {
+      const data = await res.json()
+      throw new Error(data.error || 'Erreur suppression commentaire')
+    }
     return res.json()
   },
 
@@ -241,7 +245,7 @@ export const api = {
     return res.json()
   },
 
-  deleteComment: async (token, commentId) => {
+  deleteCommentAdmin: async (token, commentId) => {
     const res = await fetch(`${API_URL}/admin/comments/${commentId}`, {
       method: 'DELETE',
       headers: { 'Authorization': `Bearer ${token}` }

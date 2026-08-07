@@ -598,31 +598,39 @@
 .comments-list {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 0.3rem;
   max-height: 300px;
   overflow-y: auto;
 }
 
 .comment-item {
   background: var(--surface);
-  padding: 0.75rem 1rem;
-  border-radius: 4px;
+  padding: 0.4rem 0.8rem;
+  border-radius: 3px;
   border: 1px solid var(--border);
   width: auto;
   max-width: 100%;
+  display: flex;
+  gap: 0.5rem;
+  align-items: flex-start;
+  font-size: 0.8rem;
+  min-height: auto;
 }
 
 .comment-header {
   display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 0.5rem;
+  align-items: center;
+  gap: 0.3rem;
+  margin-bottom: 0;
+  flex: 1;
 }
 
 .comment-header strong {
   color: var(--text-primary);
-  font-size: 0.85rem;
-  font-weight: 600;
+  font-size: 0.75rem;
+  font-weight: 700;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .kebab-menu-container {
@@ -635,18 +643,22 @@
   border: none;
   color: var(--text-secondary);
   cursor: pointer;
-  font-size: 1rem;
-  padding: 0.2rem 0.4rem;
-  border-radius: 3px;
-  transition: all 0.2s ease;
+  font-size: 0.75rem;
+  padding: 0;
+  border-radius: 2px;
+  transition: all 0.15s ease;
   display: flex;
   align-items: center;
   justify-content: center;
   line-height: 1;
+  width: 20px;
+  height: 18px;
+  flex-shrink: 0;
+  margin-left: auto;
 }
 
 .kebab-button:hover {
-  background-color: rgba(100, 116, 139, 0.2);
+  background-color: rgba(100, 116, 139, 0.15);
   color: var(--text-primary);
 }
 
@@ -654,14 +666,14 @@
   position: absolute;
   top: 100%;
   right: 0;
-  margin-top: 0.5rem;
+  margin-top: 0.2rem;
   background-color: var(--bg-secondary);
   border: 1px solid var(--border);
-  border-radius: 6px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  border-radius: 3px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
   z-index: 1000;
-  min-width: 150px;
-  animation: slideDown 0.2s ease;
+  min-width: 120px;
+  animation: slideDown 0.15s ease;
 }
 
 @keyframes slideDown {
@@ -683,10 +695,10 @@
   border: none;
   color: var(--text-primary);
   cursor: pointer;
-  padding: 0.75rem 1rem;
-  font-size: 0.9rem;
-  transition: all 0.2s ease;
-  border-bottom: 1px solid rgba(148, 163, 184, 0.1);
+  padding: 0.4rem 0.7rem;
+  font-size: 0.8rem;
+  transition: all 0.15s ease;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.05);
 }
 
 .kebab-item:last-child {
@@ -694,12 +706,12 @@
 }
 
 .kebab-item:hover {
-  background-color: rgba(99, 102, 241, 0.2);
+  background-color: rgba(99, 102, 241, 0.15);
   color: var(--text-primary);
 }
 
 .kebab-item.kebab-delete:hover {
-  background-color: rgba(239, 68, 68, 0.15);
+  background-color: rgba(239, 68, 68, 0.12);
   color: #ef4444;
 }
 
@@ -779,23 +791,29 @@
 
 .comment-text {
   color: var(--text-primary);
-  margin: 0.5rem 0 0.5rem 0;
-  font-size: 0.9rem;
-  line-height: 1.4;
+  margin: 0;
+  font-size: 0.8rem;
+  line-height: 1.3;
+  flex: 1;
+  word-break: break-word;
 }
 
 .comment-date {
   color: var(--text-secondary);
-  font-size: 0.75rem;
+  font-size: 0.7rem;
   margin: 0;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .comment-footer {
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-end;
   align-items: center;
-  gap: 0.75rem;
-  margin-top: 0.5rem;
+  gap: 0.3rem;
+  margin-top: 0;
+  margin-left: auto;
+  flex-shrink: 0;
 }
 
 .comment-footer .comment-date {
@@ -806,17 +824,19 @@
 .reply-btn {
   background: none;
   border: none;
-  color: var(--accent);
+  color: var(--text-secondary);
   cursor: pointer;
-  font-size: 0.8rem;
-  padding: 0;
+  font-size: 0.7rem;
+  padding: 0.1rem 0.3rem;
   text-decoration: none;
-  transition: color 0.2s ease;
+  transition: all 0.15s ease;
+  border-radius: 2px;
+  margin-left: 0.3rem;
 }
 
 .reply-btn:hover {
-  color: #06b6d4;
-  text-decoration: underline;
+  color: var(--accent);
+  background: rgba(6, 182, 212, 0.1);
 }
 
 .reply-form {
@@ -871,47 +891,61 @@
 }
 
 .replies-container {
-  margin-top: 0.75rem;
+  margin-top: 0.3rem;
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
-  border-left: 2px solid var(--border);
-  padding-left: 1.5rem;
+  gap: 0.2rem;
+  border-left: 1px solid var(--border);
+  padding-left: 1rem;
   margin-left: 0;
 }
 
 .reply-item {
+  background: transparent;
+  padding: 0.4rem 0.8rem;
+  border-radius: 3px;
+  border: 1px solid transparent;
+  font-size: 0.8rem;
+  display: flex;
+  gap: 0.4rem;
+  align-items: flex-start;
+}
+
+.reply-item:hover {
   background: var(--surface);
-  padding: 0.75rem 1rem;
-  border-radius: 4px;
-  border: 1px solid var(--border);
-  font-size: 0.9rem;
+  border-color: var(--border);
 }
 
 .reply-header {
   display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 0.5rem;
+  align-items: center;
+  gap: 0.3rem;
+  margin-bottom: 0;
+  flex-shrink: 0;
 }
 
 .reply-header strong {
   color: var(--text-primary);
-  font-size: 0.85rem;
-  font-weight: 600;
+  font-size: 0.75rem;
+  font-weight: 700;
+  white-space: nowrap;
 }
 
 .reply-text {
   color: var(--text-primary);
-  font-size: 0.9rem;
-  margin: 0.5rem 0 0.5rem 0;
-  line-height: 1.4;
+  font-size: 0.8rem;
+  margin: 0;
+  line-height: 1.3;
+  flex: 1;
+  word-break: break-word;
 }
 
 .reply-date {
   color: var(--text-secondary);
-  font-size: 0.75rem;
+  font-size: 0.7rem;
   margin: 0;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 @media (max-width: 1024px) {

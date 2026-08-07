@@ -181,10 +181,17 @@ export default function Explore({ onNavigate, user, token, onProfileClick, onLog
   const handleDeleteComment = async (commentId) => {
     if (!user || !token || !window.confirm('Êtes-vous sûr de vouloir supprimer ce commentaire ?')) return
     try {
-      await api.deleteComment(token, commentId)
-      await loadVideoDetails()
+      console.log('Suppression commentaire:', commentId, 'Token:', token ? 'OK' : 'MISSING')
+      const result = await api.deleteComment(token, commentId)
+      if (result.error) {
+        console.error('Erreur suppression:', result.error)
+        alert('Erreur: ' + result.error)
+      } else {
+        await loadVideoDetails()
+      }
     } catch (err) {
-      console.error('Erreur suppression:', err)
+      console.error('Erreur suppression:', err.message)
+      alert('Erreur suppression: ' + err.message)
     }
   }
 
@@ -253,11 +260,18 @@ export default function Explore({ onNavigate, user, token, onProfileClick, onLog
   const handleDeleteReply = async (replyId, commentId) => {
     if (!user || !window.confirm('Êtes-vous sûr de vouloir supprimer cette réponse ?')) return
     try {
-      const token = localStorage.getItem('token')
-      await api.deleteComment(token, replyId)
-      await loadCommentReplies(commentId)
+      const tk = localStorage.getItem('token') || token
+      console.log('Suppression réponse:', replyId, 'Token:', tk ? 'OK' : 'MISSING')
+      const result = await api.deleteComment(tk, replyId)
+      if (result.error) {
+        console.error('Erreur suppression:', result.error)
+        alert('Erreur: ' + result.error)
+      } else {
+        await loadCommentReplies(commentId)
+      }
     } catch (err) {
-      console.error('Erreur suppression réponse:', err)
+      console.error('Erreur suppression réponse:', err.message)
+      alert('Erreur suppression: ' + err.message)
     }
   }
 
