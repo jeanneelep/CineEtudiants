@@ -29,6 +29,10 @@ Thumbs.db
 *.sqlite
 postgres_data/
 
+# User-uploaded content
+backend/uploads/*
+!backend/uploads/.gitkeep
+
 # Logs
 logs/
 *.log
