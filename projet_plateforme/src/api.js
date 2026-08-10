@@ -150,6 +150,30 @@ export const api = {
     return res.json()
   },
 
+  // Favorites
+  getVideoFavoriteStatus: async (token, videoId) => {
+    const headers = { 'Content-Type': 'application/json' }
+    if (token) headers['Authorization'] = `Bearer ${token}`
+
+    const res = await fetch(`${API_URL}/videos/${videoId}/favorites`, { headers })
+    return res.json()
+  },
+
+  toggleFavorite: async (token, videoId) => {
+    const res = await fetch(`${API_URL}/videos/${videoId}/favorites`, {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${token}` }
+    })
+    return res.json()
+  },
+
+  getUserFavorites: async (token, userId) => {
+    const res = await fetch(`${API_URL}/users/user/${userId}/favorites`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    })
+    return res.json()
+  },
+
   // User Profile
   getUserProfile: async (userId) => {
     const res = await fetch(`${API_URL}/users/${userId}`)
@@ -182,7 +206,7 @@ export const api = {
   },
 
   getAdminVideos: async (token, status = null) => {
-    const url = status 
+    const url = status
       ? `${API_URL}/admin/videos?status=${status}`
       : `${API_URL}/admin/videos`
     const res = await fetch(url, {

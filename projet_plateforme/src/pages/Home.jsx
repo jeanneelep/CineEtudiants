@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { api } from '../api'
 import Footer from '../components/Footer'
 import '../styles/Home.css'
+import FavoriteButton from '../components/FavoriteButton'
 
 const CATEGORIES = ['Drame', 'Animation', 'Documentaire', 'Poétique', 'Expérimental']
 
@@ -10,6 +11,7 @@ export default function Home({ onNavigate, user, token, onProfileClick, onLogout
   const [videos, setVideos] = useState([])
   const [loading, setLoading] = useState(true)
   const [videoLikes, setVideoLikes] = useState(null)
+  const [videoFavorites, setVideoFavorites] = useState(null)
   const [videoComments, setVideoComments] = useState([])
   const [newComment, setNewComment] = useState('')
   const [commentLoading, setCommentLoading] = useState(false)
@@ -62,6 +64,8 @@ export default function Home({ onNavigate, user, token, onProfileClick, onLogout
       const comments = await api.getVideoComments(selectedVideo.id)
       setVideoLikes(likes)
       setVideoComments(Array.isArray(comments) ? comments : [])
+      const favorites = await api.getVideoFavoriteStatus(token, selectedVideo.id)
+      setVideoFavorites(favorites)
       // Charger les réponses pour chaque commentaire
       if (Array.isArray(comments)) {
         const repliesMap = {}
@@ -429,7 +433,7 @@ export default function Home({ onNavigate, user, token, onProfileClick, onLogout
                 <button className={`like-btn ${videoLikes?.userLiked ? 'liked' : ''}`} onClick={handleLike}>
                   ❤️ {videoLikes?.count || 0}
                 </button>
-                <span className="comment-count">💬 {videoComments.length}</span>
+                <FavoriteButton videoId={selectedVideo.id} user={user} token={token} isFavorite={videoFavorites?.isFavorite} count={videoFavorites?.count} />
               </div>
 
               <div className="comments-section">

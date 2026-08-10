@@ -296,3 +296,159 @@
     text-align: center;
   }
 }
+
+/* Profile Tabs */
+.profile-tabs {
+  display: flex;
+  gap: 1rem;
+  margin: 2rem 0 1.5rem;
+  border-bottom: 1px solid #334155;
+}
+
+.tab-btn {
+  background: none;
+  border: none;
+  color: #cbd5e1;
+  padding: 0.75rem 1.5rem;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border-bottom: 2px solid transparent;
+}
+
+.tab-btn:hover {
+  color: #e2e8f0;
+}
+
+.tab-btn.active {
+  color: #fbbf24;
+  border-bottom-color: #fbbf24;
+}
+
+/* Favorites Section */
+.favorites-section {
+  margin-top: 1.5rem;
+}
+
+.favorites-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 1.5rem;
+  margin-top: 1.5rem;
+}
+
+.favorite-card {
+  background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+  border: 1px solid #334155;
+  border-radius: 0.75rem;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.favorite-card:hover {
+  border-color: #fbbf24;
+  transform: translateY(-4px);
+}
+
+.favorite-thumbnail {
+  position: relative;
+  width: 100%;
+  height: 180px;
+  overflow: hidden;
+  background: #0f172a;
+}
+
+.favorite-thumbnail img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.favorite-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.favorite-card:hover .favorite-overlay {
+  opacity: 1;
+}
+
+.play-btn {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background: #fbbf24;
+  color: #0f172a;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.play-btn:hover {
+  background: #fcd34d;
+  transform: scale(1.1);
+}
+
+.favorite-info {
+  padding: 1rem;
+}
+
+.favorite-info h4 {
+  margin: 0 0 0.5rem;
+  color: #e2e8f0;
+  font-size: 0.95rem;
+  line-height: 1.4;
+}
+
+.favorite-meta {
+  font-size: 0.8rem;
+  color: #94a3b8;
+  margin: 0.25rem 0;
+}
+
+.favorite-creator {
+  font-size: 0.8rem;
+  color: #64748b;
+  margin: 0.25rem 0 0.75rem;
+}
+
+.favorite-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+@media (max-width: 768px) {
+  .profile-tabs {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .tab-btn {
+    padding: 0.5rem 1rem;
+    font-size: 0.9rem;
+  }
+
+  .favorites-grid {
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .favorites-grid {
+    grid-template-columns: 1fr;
+  }
+}

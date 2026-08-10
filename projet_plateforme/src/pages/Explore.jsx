@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { api } from '../api'
 import Footer from '../components/Footer'
 import '../styles/Explore.css'
+import FavoriteButton from '../components/FavoriteButton'
 
 const CATEGORIES = ['Drame', 'Animation', 'Documentaire', 'Poétique', 'Expérimental', 'Comédie', 'Horreur', 'Action']
 const DURATIONS = [
@@ -22,6 +23,7 @@ export default function Explore({ onNavigate, user, token, onProfileClick, onLog
   const [currentPage, setCurrentPage] = useState(1)
   const [showFilters, setShowFilters] = useState(false)
   const [videoLikes, setVideoLikes] = useState(null)
+  const [videoFavorites, setVideoFavorites] = useState(null)
   const [videoComments, setVideoComments] = useState([])
   const [newComment, setNewComment] = useState('')
   const [commentLoading, setCommentLoading] = useState(false)
@@ -74,6 +76,8 @@ export default function Explore({ onNavigate, user, token, onProfileClick, onLog
       const comments = await api.getVideoComments(selectedVideo.id)
       setVideoLikes(likes)
       setVideoComments(Array.isArray(comments) ? comments : [])
+      const favorites = await api.getVideoFavoriteStatus(token, selectedVideo.id)
+      setVideoFavorites(favorites)
       // Charger les réponses pour chaque commentaire
       if (Array.isArray(comments)) {
         const repliesMap = {}
@@ -478,7 +482,7 @@ export default function Explore({ onNavigate, user, token, onProfileClick, onLog
                 <button className={`like-btn ${videoLikes?.userLiked ? 'liked' : ''}`} onClick={handleLike}>
                   ❤️ {videoLikes?.count || 0}
                 </button>
-                <span className="comment-count">💬 {videoComments.length}</span>
+                <FavoriteButton videoId={selectedVideo.id} user={user} token={token} isFavorite={videoFavorites?.isFavorite} count={videoFavorites?.count} />
               </div>
 
               <div className="comments-section">

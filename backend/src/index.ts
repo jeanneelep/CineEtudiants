@@ -5,6 +5,7 @@ import authRoutes from './routes/authRoutes'
 import videoRoutes from './routes/videoRoutes'
 import commentRoutes from './routes/commentRoutes'
 import likeRoutes from './routes/likeRoutes'
+import favoriteRoutes from './routes/favoriteRoutes'
 import userRoutes from './routes/userRoutes'
 import adminRoutes from './routes/adminRoutes'
 import { initializeEmail } from './services/emailService'
@@ -26,6 +27,7 @@ app.use('/api/auth', authRoutes)
 app.use('/api/videos', videoRoutes)
 app.use('/api/videos', commentRoutes)
 app.use('/api/videos', likeRoutes)
+app.use('/api/videos', favoriteRoutes)
 app.use('/api/users', userRoutes)
 app.use('/api/admin', adminRoutes)
 
