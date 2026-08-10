@@ -14,7 +14,7 @@ export const getAllVideos = async (req: AuthRequest, res: Response) => {
 
     const where: any = {}
     if (category && typeof category === 'string') where.category = category
-    if (status && typeof status === 'string') where.status = status
+    where.status = (status && typeof status === 'string') ? status : 'approved'
 
     const videos = await prisma.video.findMany({
       where,
@@ -81,14 +81,16 @@ export const createVideo = async (req: AuthRequest, res: Response) => {
         category,
         duration: parseInt(duration) || 0,
         creatorId,
-        status: hasForbiddenContent ? 'rejected' : 'approved'
+        status: hasForbiddenContent ? 'rejected' : 'pending'
       },
       include: { creator: { select: { id: true, name: true } } }
     })
 
     res.status(201).json({
       ...video,
-      message: hasForbiddenContent ? 'Video uploaded but rejected: contains forbidden content' : 'Video uploaded successfully'
+      message: hasForbiddenContent
+        ? 'Video uploaded but rejected: contains forbidden content'
+        : 'Video uploaded successfully and is awaiting moderation'
     })
   } catch (error) {
     res.status(500).json({ error: 'Failed to create video' })

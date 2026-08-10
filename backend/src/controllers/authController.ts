@@ -1,11 +1,14 @@
 import { Response } from 'express'
 import { PrismaClient } from '@prisma/client'
 import jwt from 'jsonwebtoken'
+import bcrypt from 'bcryptjs'
 import { AuthRequest } from '../middleware/auth'
 import { generateVerificationCode, getCodeExpireTime } from '../utils/contentFilter'
 import { sendVerificationEmail } from '../services/emailService'
 
 const prisma = new PrismaClient()
+const JWT_SECRET = process.env.JWT_SECRET as string
+const BCRYPT_ROUNDS = 10
 
 export const register = async (req: AuthRequest, res: Response) => {
   try {
@@ -22,12 +25,13 @@ export const register = async (req: AuthRequest, res: Response) => {
 
     const verificationCode = generateVerificationCode()
     const verificationCodeExpires = getCodeExpireTime()
+    const hashedPassword = await bcrypt.hash(password, BCRYPT_ROUNDS)
 
     const user = await prisma.user.create({
       data: {
         email,
         name,
-        password,
+        password: hashedPassword,
         verificationCode,
         verificationCodeExpires,
         emailVerified: false
@@ -80,7 +84,7 @@ export const verifyEmail = async (req: AuthRequest, res: Response) => {
       }
     })
 
-    const token = jwt.sign({ id: updatedUser.id }, process.env.JWT_SECRET || 'secret', { expiresIn: '7d' })
+    const token = jwt.sign({ id: updatedUser.id }, JWT_SECRET, { expiresIn: '7d' })
 
     res.json({
       message: 'Email verified successfully',
@@ -134,11 +138,27 @@ export const login = async (req: AuthRequest, res: Response) => {
     }
 
     const user = await prisma.user.findUnique({ where: { email } })
-    if (!user || user.password !== password) {
+    if (!user) {
       return res.status(401).json({ error: 'Invalid credentials' })
     }
 
-    const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET || 'secret', { expiresIn: '7d' })
+    const isBcryptHash = user.password.startsWith('$2')
+    let passwordValid = false
+
+    if (isBcryptHash) {
+      passwordValid = await bcrypt.compare(password, user.password)
+    } else if (user.password === password) {
+      // Compte hérité avec mot de passe en clair : on migre silencieusement vers bcrypt
+      passwordValid = true
+      const hashedPassword = await bcrypt.hash(password, BCRYPT_ROUNDS)
+      await prisma.user.update({ where: { id: user.id }, data: { password: hashedPassword } })
+    }
+
+    if (!passwordValid) {
+      return res.status(401).json({ error: 'Invalid credentials' })
+    }
+
+    const token = jwt.sign({ id: user.id }, JWT_SECRET, { expiresIn: '7d' })
 
     res.json({
       user: {

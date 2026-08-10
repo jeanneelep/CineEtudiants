@@ -163,16 +163,18 @@ export const approveComment = async (req: AuthRequest, res: Response) => {
   }
 }
 
-// PUT /api/admin/comments/:commentId/reject - Supprime un commentaire
+// PUT /api/admin/comments/:commentId/reject - Masque un commentaire (statut rejected)
 export const rejectComment = async (req: AuthRequest, res: Response) => {
   try {
     const { commentId } = req.params as { commentId: string }
 
-    await prisma.comment.delete({
-      where: { id: commentId as string }
+    const comment = await prisma.comment.update({
+      where: { id: commentId as string },
+      data: { status: 'rejected' },
+      include: { user: { select: { id: true, name: true } } }
     })
 
-    res.json({ message: 'Comment rejected and deleted' })
+    res.json({ message: 'Comment rejected', comment })
   } catch (error) {
     console.error('Reject error:', error)
     res.status(500).json({ error: 'Failed to reject comment' })

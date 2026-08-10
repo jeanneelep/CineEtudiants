@@ -169,7 +169,7 @@ export default function AdminDashboard({ user, token, onLogout, onBack }) {
   const handleRejectComment = async (commentId) => {
     try {
       await api.rejectComment(token, commentId)
-      alert('Commentaire supprimé!')
+      alert('Commentaire rejeté et masqué!')
       loadDashboardData()
     } catch (err) {
       console.error('Erreur rejet commentaire:', err)
@@ -191,7 +191,7 @@ export default function AdminDashboard({ user, token, onLogout, onBack }) {
       if (action === 'deleteVideo') {
         await api.deleteVideo(token, id)
       } else if (action === 'deleteComment') {
-        await api.deleteComment(token, id)
+        await api.deleteCommentAdmin(token, id)
       } else if (action === 'deleteUser') {
         await api.deleteUser(token, id)
       }
@@ -398,17 +398,17 @@ export default function AdminDashboard({ user, token, onLogout, onBack }) {
                     <p className="comment-date">{new Date(comment.createdAt).toLocaleDateString('fr-FR')}</p>
                   </div>
                   <div className="item-actions">
-                    {comment.status === 'pending' && (
-                      <div className="kebab-menu-container">
-                        <button
-                          className="kebab-button"
-                          onClick={() => setOpenMenuId(openMenuId === `comment-${comment.id}` ? null : `comment-${comment.id}`)}
-                          title="Options"
-                        >
-                          •••
-                        </button>
-                        {openMenuId === `comment-${comment.id}` && (
-                          <div className="kebab-menu">
+                    <div className="kebab-menu-container">
+                      <button
+                        className="kebab-button"
+                        onClick={() => setOpenMenuId(openMenuId === `comment-${comment.id}` ? null : `comment-${comment.id}`)}
+                        title="Options"
+                      >
+                        •••
+                      </button>
+                      {openMenuId === `comment-${comment.id}` && (
+                        <div className="kebab-menu">
+                          {comment.status !== 'approved' && (
                             <button
                               className="kebab-item"
                               onClick={() => {
@@ -418,19 +418,30 @@ export default function AdminDashboard({ user, token, onLogout, onBack }) {
                             >
                               Approuver
                             </button>
+                          )}
+                          {comment.status !== 'rejected' && (
                             <button
-                              className="kebab-item kebab-delete"
+                              className="kebab-item"
                               onClick={() => {
-                                openConfirmModal('deleteComment', comment.id, 'comment')
+                                handleRejectComment(comment.id)
                                 setOpenMenuId(null)
                               }}
                             >
-                              Supprimer
+                              Rejeter
                             </button>
-                          </div>
-                        )}
-                      </div>
-                    )}
+                          )}
+                          <button
+                            className="kebab-item kebab-delete"
+                            onClick={() => {
+                              openConfirmModal('deleteComment', comment.id, 'comment')
+                              setOpenMenuId(null)
+                            }}
+                          >
+                            Supprimer
+                          </button>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
               ))}

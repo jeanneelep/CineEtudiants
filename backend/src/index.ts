@@ -11,6 +11,12 @@ import adminRoutes from './routes/adminRoutes'
 import { initializeEmail } from './services/emailService'
 
 dotenv.config()
+
+if (!process.env.JWT_SECRET) {
+  console.error('FATAL: JWT_SECRET is not set in the environment. Refusing to start.')
+  process.exit(1)
+}
+
 initializeEmail().catch(err => console.error('Email init error:', err))
 
 const app = express()

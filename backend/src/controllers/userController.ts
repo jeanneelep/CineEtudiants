@@ -1,12 +1,25 @@
 import { Response } from 'express'
 import { PrismaClient } from '@prisma/client'
+import jwt from 'jsonwebtoken'
 import { AuthRequest } from '../middleware/auth'
 
 const prisma = new PrismaClient()
 
+const getRequesterId = (req: AuthRequest): string | null => {
+  const token = req.headers.authorization?.split(' ')[1]
+  if (!token) return null
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET as string) as { id: string }
+    return decoded.id
+  } catch {
+    return null
+  }
+}
+
 export const getUserProfile = async (req: AuthRequest, res: Response) => {
   try {
     const { id } = req.params as { id: string }
+    const isOwner = getRequesterId(req) === id
 
     const user = await prisma.user.findUnique({
       where: { id },
@@ -17,7 +30,7 @@ export const getUserProfile = async (req: AuthRequest, res: Response) => {
         bio: true,
         avatar: true,
         createdAt: true,
-        videos: true,
+        videos: { where: isOwner ? {} : { status: 'approved' } },
         _count: {
           select: { videos: true, likes: true }
         }
@@ -33,8 +46,10 @@ export const getUserProfile = async (req: AuthRequest, res: Response) => {
       where: { videoId: { in: videoIds } }
     })
 
+    const { email, ...publicUser } = user
+
     res.json({
-      ...user,
+      ...(isOwner ? user : publicUser),
       stats: {
         videoCount: user._count.videos,
         likesReceived: totalLikesReceived

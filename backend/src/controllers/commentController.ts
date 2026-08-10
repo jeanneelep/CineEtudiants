@@ -9,7 +9,7 @@ export const getVideoComments = async (req: AuthRequest, res: Response) => {
     const { id } = req.params as { id: string }
 
     const comments = await prisma.comment.findMany({
-      where: { videoId: id },
+      where: { videoId: id, status: { not: 'rejected' } },
       include: { user: { select: { id: true, name: true, avatar: true } } },
       orderBy: { createdAt: 'desc' }
     })
@@ -43,7 +43,8 @@ export const createComment = async (req: AuthRequest, res: Response) => {
       data: {
         content: content.trim(),
         userId,
-        videoId
+        videoId,
+        status: 'approved'
       },
       include: { user: { select: { id: true, name: true, avatar: true } } }
     })
@@ -141,7 +142,8 @@ export const replyToComment = async (req: AuthRequest, res: Response) => {
         content: content.trim(),
         userId,
         videoId: parentComment.videoId,
-        parentCommentId: commentId
+        parentCommentId: commentId,
+        status: 'approved'
       },
       include: { user: { select: { id: true, name: true, avatar: true } } }
     })
@@ -157,7 +159,7 @@ export const getCommentReplies = async (req: AuthRequest, res: Response) => {
     const { commentId } = req.params as { commentId: string }
 
     const replies = await prisma.comment.findMany({
-      where: { parentCommentId: commentId },
+      where: { parentCommentId: commentId, status: { not: 'rejected' } },
       include: { user: { select: { id: true, name: true, avatar: true } } },
       orderBy: { createdAt: 'asc' }
     })

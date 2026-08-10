@@ -168,15 +168,17 @@ export const api = {
   },
 
   getUserFavorites: async (token, userId) => {
-    const res = await fetch(`${API_URL}/users/user/${userId}/favorites`, {
+    const res = await fetch(`${API_URL}/videos/user/${userId}/favorites`, {
       headers: { 'Authorization': `Bearer ${token}` }
     })
     return res.json()
   },
 
   // User Profile
-  getUserProfile: async (userId) => {
-    const res = await fetch(`${API_URL}/users/${userId}`)
+  getUserProfile: async (token, userId) => {
+    const headers = {}
+    if (token) headers['Authorization'] = `Bearer ${token}`
+    const res = await fetch(`${API_URL}/users/${userId}`, { headers })
     return res.json()
   },
 

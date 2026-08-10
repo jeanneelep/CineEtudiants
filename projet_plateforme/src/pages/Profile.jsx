@@ -20,7 +20,7 @@ export default function Profile({ user, token, onBack, onUploadClick, onLogout }
 
   const loadProfile = async () => {
     try {
-      const data = await api.getUserProfile(user.id)
+      const data = await api.getUserProfile(token, user.id)
       setProfile(data)
     } catch (err) {
       console.error('Erreur chargement profil:', err)
