@@ -68,7 +68,7 @@ export default function Profile({ user, token, onBack, onUploadClick, onLogout }
 
   const getVideoUrl = (url) => {
     if (url.startsWith('http')) return url
-    return `http://localhost:5000/api/videos/stream/${url}`
+    return `http://localhost:5000${url}`
   }
 
   const getCreatorName = (creator) => {
