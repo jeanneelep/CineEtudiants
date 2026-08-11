@@ -280,6 +280,10 @@ export default function Home({ onNavigate, user, token, onProfileClick, onLogout
     return creator?.name || 'Inconnu'
   }
 
+  const formatTime = (dateString) => {
+    return new Date(dateString).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })
+  }
+
   const getVideoUrl = (url) => {
     if (url.startsWith('http')) return url
     return `http://localhost:5000${url}`
@@ -461,40 +465,43 @@ export default function Home({ onNavigate, user, token, onProfileClick, onLogout
                   {videoComments.map(comment => (
                     <div key={comment.id} className="comment-item">
                       <div className="comment-header">
-                        <strong>{comment.user.name}</strong>
-                        {user?.id === comment.userId && (
-                          <div className="kebab-menu-container">
-                            <button
-                              className="kebab-button"
-                              onClick={() => setOpenMenuId(openMenuId === comment.id ? null : comment.id)}
-                              title="Options"
-                            >
-                              •••
-                            </button>
-                            {openMenuId === comment.id && (
-                              <div className="kebab-menu">
-                                <button
-                                  className="kebab-item"
-                                  onClick={() => {
-                                    handleEditComment(comment)
-                                    setOpenMenuId(null)
-                                  }}
-                                >
-                                  Modifier
-                                </button>
-                                <button
-                                  className="kebab-item kebab-delete"
-                                  onClick={() => {
-                                    handleDeleteComment(comment.id)
-                                    setOpenMenuId(null)
-                                  }}
-                                >
-                                  Supprimer
-                                </button>
-                              </div>
-                            )}
-                          </div>
-                        )}
+                        <strong>@{comment.user.name}</strong>
+                        <div className="comment-meta">
+                          <span className="comment-time">{formatTime(comment.createdAt)}</span>
+                          {user?.id === comment.userId && (
+                            <div className="kebab-menu-container">
+                              <button
+                                className="kebab-button"
+                                onClick={() => setOpenMenuId(openMenuId === comment.id ? null : comment.id)}
+                                title="Options"
+                              >
+                                •••
+                              </button>
+                              {openMenuId === comment.id && (
+                                <div className="kebab-menu">
+                                  <button
+                                    className="kebab-item"
+                                    onClick={() => {
+                                      handleEditComment(comment)
+                                      setOpenMenuId(null)
+                                    }}
+                                  >
+                                    Modifier
+                                  </button>
+                                  <button
+                                    className="kebab-item kebab-delete"
+                                    onClick={() => {
+                                      handleDeleteComment(comment.id)
+                                      setOpenMenuId(null)
+                                    }}
+                                  >
+                                    Supprimer
+                                  </button>
+                                </div>
+                              )}
+                            </div>
+                          )}
+                        </div>
                       </div>
 
                       {editingCommentId === comment.id ? (
@@ -525,19 +532,16 @@ export default function Home({ onNavigate, user, token, onProfileClick, onLogout
                         <p className="comment-text">{comment.content}</p>
                       )}
 
-                      <div className="comment-footer">
-                        <p className="comment-date">
-                          {new Date(comment.createdAt).toLocaleDateString('fr-FR')}
-                        </p>
-                        {user && !editingCommentId && (
+                      {user && !editingCommentId && (
+                        <div className="comment-footer">
                           <button
                             className="reply-btn"
                             onClick={() => setReplyingTo(replyingTo === comment.id ? null : comment.id)}
                           >
                             {replyingTo === comment.id ? 'Annuler' : 'Répondre'}
                           </button>
-                        )}
-                      </div>
+                        </div>
+                      )}
 
                       {/* Formulaire de réponse */}
                       {replyingTo === comment.id && user && (
@@ -564,40 +568,43 @@ export default function Home({ onNavigate, user, token, onProfileClick, onLogout
                           {commentReplies[comment.id].map(reply => (
                             <div key={reply.id} className="reply-item">
                               <div className="reply-header">
-                                <strong>{reply.user.name}</strong>
-                                {user?.id === reply.userId && (
-                                  <div className="kebab-menu-container">
-                                    <button
-                                      className="kebab-button"
-                                      onClick={() => setOpenReplyMenuId(openReplyMenuId === reply.id ? null : reply.id)}
-                                      title="Options"
-                                    >
-                                      •••
-                                    </button>
-                                    {openReplyMenuId === reply.id && (
-                                      <div className="kebab-menu">
-                                        <button
-                                          className="kebab-item"
-                                          onClick={() => {
-                                            handleEditReply(reply)
-                                            setOpenReplyMenuId(null)
-                                          }}
-                                        >
-                                          Modifier
-                                        </button>
-                                        <button
-                                          className="kebab-item kebab-delete"
-                                          onClick={() => {
-                                            handleDeleteReply(reply.id, comment.id)
-                                            setOpenReplyMenuId(null)
-                                          }}
-                                        >
-                                          Supprimer
-                                        </button>
-                                      </div>
-                                    )}
-                                  </div>
-                                )}
+                                <strong>@{reply.user.name}</strong>
+                                <div className="comment-meta">
+                                  <span className="comment-time">{formatTime(reply.createdAt)}</span>
+                                  {user?.id === reply.userId && (
+                                    <div className="kebab-menu-container">
+                                      <button
+                                        className="kebab-button"
+                                        onClick={() => setOpenReplyMenuId(openReplyMenuId === reply.id ? null : reply.id)}
+                                        title="Options"
+                                      >
+                                        •••
+                                      </button>
+                                      {openReplyMenuId === reply.id && (
+                                        <div className="kebab-menu">
+                                          <button
+                                            className="kebab-item"
+                                            onClick={() => {
+                                              handleEditReply(reply)
+                                              setOpenReplyMenuId(null)
+                                            }}
+                                          >
+                                            Modifier
+                                          </button>
+                                          <button
+                                            className="kebab-item kebab-delete"
+                                            onClick={() => {
+                                              handleDeleteReply(reply.id, comment.id)
+                                              setOpenReplyMenuId(null)
+                                            }}
+                                          >
+                                            Supprimer
+                                          </button>
+                                        </div>
+                                      )}
+                                    </div>
+                                  )}
+                                </div>
                               </div>
 
                               {editingReplyId === reply.id ? (
@@ -627,10 +634,6 @@ export default function Home({ onNavigate, user, token, onProfileClick, onLogout
                               ) : (
                                 <p className="reply-text">{reply.content}</p>
                               )}
-
-                              <p className="reply-date">
-                                {new Date(reply.createdAt).toLocaleDateString('fr-FR')}
-                              </p>
                             </div>
                           ))}
                         </div>

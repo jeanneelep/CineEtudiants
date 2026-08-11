@@ -9,14 +9,30 @@ export default function Profile({ user, token, onBack, onUploadClick, onLogout }
   const [loading, setLoading] = useState(true)
   const [favorites, setFavorites] = useState([])
   const [favoritesLoading, setFavoritesLoading] = useState(false)
-  const [activeTab, setActiveTab] = useState('profile') // 'profile' or 'favorites'
+  const [myVideos, setMyVideos] = useState([])
+  const [myVideosLoading, setMyVideosLoading] = useState(false)
+  const [activeTab, setActiveTab] = useState('profile') // 'profile' | 'favorites' | 'videos'
 
   useEffect(() => {
     if (user?.id) {
       loadProfile()
       loadFavorites()
+      loadMyVideos()
     }
   }, [user?.id])
+
+  const loadMyVideos = async () => {
+    setMyVideosLoading(true)
+    try {
+      const data = await api.getUserVideos(user.id)
+      setMyVideos(Array.isArray(data) ? data : [])
+    } catch (err) {
+      console.error('Erreur chargement de mes vidéos:', err)
+      setMyVideos([])
+    } finally {
+      setMyVideosLoading(false)
+    }
+  }
 
   const loadProfile = async () => {
     try {
@@ -92,6 +108,12 @@ export default function Profile({ user, token, onBack, onUploadClick, onLogout }
               Profil
             </button>
             <button
+              className={`tab-btn ${activeTab === 'videos' ? 'active' : ''}`}
+              onClick={() => setActiveTab('videos')}
+            >
+              🎬 Mes Films ({myVideos.length})
+            </button>
+            <button
               className={`tab-btn ${activeTab === 'favorites' ? 'active' : ''}`}
               onClick={() => setActiveTab('favorites')}
             >
@@ -108,18 +130,18 @@ export default function Profile({ user, token, onBack, onUploadClick, onLogout }
                 <div className="stats-section">
                   <h3>Statistiques</h3>
                   <div className="stats-grid">
-                    <div className="stat-card">
+                    <button className="stat-card stat-card-clickable" onClick={() => setActiveTab('videos')}>
                       <div className="stat-number">{profile?.stats?.videoCount || 0}</div>
                       <div className="stat-label">Films uploadés</div>
-                    </div>
-                    <div className="stat-card">
-                      <div className="stat-number">{profile?.videos?.length || 0}</div>
-                      <div className="stat-label">Vues totales</div>
-                    </div>
+                    </button>
                     <div className="stat-card">
                       <div className="stat-number">{profile?.stats?.likesReceived || 0}</div>
                       <div className="stat-label">Likes reçus</div>
                     </div>
+                    <button className="stat-card stat-card-clickable" onClick={() => setActiveTab('favorites')}>
+                      <div className="stat-number">{favorites.length}</div>
+                      <div className="stat-label">Favoris</div>
+                    </button>
                   </div>
                 </div>
               )}
@@ -144,6 +166,47 @@ export default function Profile({ user, token, onBack, onUploadClick, onLogout }
                 </p>
               </div>
             </>
+          )}
+
+          {/* My Videos Tab */}
+          {activeTab === 'videos' && (
+            <div className="favorites-section">
+              {myVideosLoading ? (
+                <div style={{padding: '2rem', textAlign: 'center', color: '#cbd5e1'}}>Chargement de vos films...</div>
+              ) : myVideos.length === 0 ? (
+                <div style={{padding: '2rem', textAlign: 'center', color: '#cbd5e1'}}>
+                  <p>Vous n'avez pas encore uploadé de film</p>
+                </div>
+              ) : (
+                <div className="favorites-grid">
+                  {myVideos.map(video => (
+                    <div
+                      key={video.id}
+                      className="favorite-card"
+                      onClick={() => window.open(getVideoUrl(video.url), '_blank')}
+                    >
+                      <div className="favorite-thumbnail">
+                        <img
+                          src={video.thumbnail || 'https://via.placeholder.com/300x200?text=No+Image'}
+                          alt={video.title}
+                          style={{width: '100%', height: '100%', objectFit: 'cover'}}
+                        />
+                        <div className="favorite-overlay">
+                          <button className="play-btn">▶</button>
+                        </div>
+                        <span className={`video-status-badge status-${video.status}`}>
+                          {video.status === 'approved' ? 'Publié' : video.status === 'pending' ? 'En attente' : 'Rejeté'}
+                        </span>
+                      </div>
+                      <div className="favorite-info">
+                        <h4>{video.title}</h4>
+                        <p className="favorite-meta">{video.category} • {formatDuration(video.duration)}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           )}
 
           {/* Favorites Tab */}
