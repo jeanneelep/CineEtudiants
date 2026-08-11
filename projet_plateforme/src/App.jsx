@@ -14,6 +14,7 @@ function App() {
   const [token, setToken] = useState(null)
   const [showRegister, setShowRegister] = useState(false)
   const [currentPage, setCurrentPage] = useState('home')
+  const [pendingVideo, setPendingVideo] = useState(null)
 
   useEffect(() => {
     const savedUser = localStorage.getItem('user')
@@ -64,6 +65,11 @@ function App() {
     setCurrentPage('home')
   }
 
+  const handleOpenVideoFromSearch = (video) => {
+    setPendingVideo(video)
+    setCurrentPage('home')
+  }
+
   const handleUpload = (uploadData) => {
     console.log('Upload data:', uploadData)
     alert('Merci ! Votre vidéo est en attente de modération. Vous serez notifié une fois acceptée.')
@@ -111,6 +117,8 @@ function App() {
           token={token}
           onProfileClick={() => setCurrentPage('profile')}
           onLogout={handleLogout}
+          pendingVideo={pendingVideo}
+          onPendingVideoConsumed={() => setPendingVideo(null)}
         />
       )
     }
@@ -122,6 +130,7 @@ function App() {
           token={token}
           onProfileClick={() => setCurrentPage('profile')}
           onLogout={handleLogout}
+          onOpenVideo={handleOpenVideoFromSearch}
         />
       )
     }
@@ -133,6 +142,8 @@ function App() {
         onProfileClick={() => setCurrentPage('profile')}
         onLogout={handleLogout}
         onAdminClick={user?.role === 'admin' ? () => setCurrentPage('admin') : null}
+        pendingVideo={pendingVideo}
+        onPendingVideoConsumed={() => setPendingVideo(null)}
       />
     )
   }

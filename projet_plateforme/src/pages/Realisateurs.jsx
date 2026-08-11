@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import Footer from '../components/Footer'
+import SearchBar from '../components/SearchBar'
 import '../styles/Realisateurs.css'
 
 const CREATORS = [
@@ -13,7 +14,7 @@ const CREATORS = [
   { id: 8, name: 'Henry Laurent', avatar: 'H', videos: 5, followers: 312, bio: 'Réalisateur de poésie visuelle' },
 ]
 
-export default function Realisateurs({ onNavigate, user, onProfileClick }) {
+export default function Realisateurs({ onNavigate, user, onProfileClick, onOpenVideo }) {
   const [selectedLetter, setSelectedLetter] = useState('A')
   const [currentPage, setCurrentPage] = useState(1)
 
@@ -54,6 +55,7 @@ export default function Realisateurs({ onNavigate, user, onProfileClick }) {
             )}
           </nav>
           <div className="header-right">
+            <SearchBar onSelectVideo={onOpenVideo} />
             {user ? (
               <button className="user-profile-btn" onClick={onProfileClick}>
                 {getAvatarUrl(user.avatar) ? (

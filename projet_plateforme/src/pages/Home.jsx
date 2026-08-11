@@ -3,10 +3,11 @@ import { api } from '../api'
 import Footer from '../components/Footer'
 import '../styles/Home.css'
 import FavoriteButton from '../components/FavoriteButton'
+import SearchBar from '../components/SearchBar'
 
 const CATEGORIES = ['Drame', 'Animation', 'Documentaire', 'Poétique', 'Expérimental']
 
-export default function Home({ onNavigate, user, token, onProfileClick, onLogout, onAdminClick }) {
+export default function Home({ onNavigate, user, token, onProfileClick, onLogout, onAdminClick, pendingVideo, onPendingVideoConsumed }) {
   const [selectedVideo, setSelectedVideo] = useState(null)
   const [videos, setVideos] = useState([])
   const [loading, setLoading] = useState(true)
@@ -36,6 +37,13 @@ export default function Home({ onNavigate, user, token, onProfileClick, onLogout
       loadVideoDetails()
     }
   }, [selectedVideo])
+
+  useEffect(() => {
+    if (pendingVideo) {
+      setSelectedVideo(pendingVideo)
+      onPendingVideoConsumed?.()
+    }
+  }, [pendingVideo])
 
   useEffect(() => {
     const handleClickOutside = (e) => {
@@ -314,6 +322,7 @@ export default function Home({ onNavigate, user, token, onProfileClick, onLogout
             )}
           </nav>
           <div className="header-right">
+            <SearchBar onSelectVideo={setSelectedVideo} />
             {user ? (
               <div className="user-menu">
                 {user.role === 'admin' && (

@@ -3,6 +3,7 @@ import { api } from '../api'
 import Footer from '../components/Footer'
 import '../styles/Explore.css'
 import FavoriteButton from '../components/FavoriteButton'
+import SearchBar from '../components/SearchBar'
 
 const CATEGORIES = ['Drame', 'Animation', 'Documentaire', 'Poétique', 'Expérimental', 'Comédie', 'Horreur', 'Action']
 const DURATIONS = [
@@ -12,7 +13,7 @@ const DURATIONS = [
   { label: 'Plus de 20 min', min: 1200, max: 100000 },
 ]
 
-export default function Explore({ onNavigate, user, token, onProfileClick, onLogout }) {
+export default function Explore({ onNavigate, user, token, onProfileClick, onLogout, pendingVideo, onPendingVideoConsumed }) {
   const [selectedVideo, setSelectedVideo] = useState(null)
   const [videos, setVideos] = useState([])
   const [loading, setLoading] = useState(true)
@@ -48,6 +49,13 @@ export default function Explore({ onNavigate, user, token, onProfileClick, onLog
       loadVideoDetails()
     }
   }, [selectedVideo])
+
+  useEffect(() => {
+    if (pendingVideo) {
+      setSelectedVideo(pendingVideo)
+      onPendingVideoConsumed?.()
+    }
+  }, [pendingVideo])
 
   useEffect(() => {
     const handleClickOutside = (e) => {
@@ -347,6 +355,7 @@ export default function Explore({ onNavigate, user, token, onProfileClick, onLog
             )}
           </nav>
           <div className="header-right">
+            <SearchBar onSelectVideo={setSelectedVideo} />
             {user ? (
               <div className="user-menu">
                 <button className="user-profile-btn" onClick={onProfileClick}>
