@@ -7,7 +7,7 @@ import SearchBar from '../components/SearchBar'
 
 const CATEGORIES = ['Drame', 'Animation', 'Documentaire', 'Poétique', 'Expérimental']
 
-export default function Home({ onNavigate, user, token, onProfileClick, onLogout, onAdminClick, pendingVideo, onPendingVideoConsumed }) {
+export default function Home({ onNavigate, user, token, onProfileClick, onLogout, onAdminClick, pendingVideo, onPendingVideoConsumed, onOpenCreator }) {
   const [selectedVideo, setSelectedVideo] = useState(null)
   const [videos, setVideos] = useState([])
   const [loading, setLoading] = useState(true)
@@ -322,7 +322,7 @@ export default function Home({ onNavigate, user, token, onProfileClick, onLogout
             )}
           </nav>
           <div className="header-right">
-            <SearchBar onSelectVideo={setSelectedVideo} />
+            <SearchBar onSelectVideo={setSelectedVideo} onSelectCreator={onOpenCreator} />
             {user ? (
               <div className="user-menu">
                 {user.role === 'admin' && (

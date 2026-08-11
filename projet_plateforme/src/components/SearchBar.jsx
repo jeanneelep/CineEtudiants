@@ -1,8 +1,9 @@
 import { useState, useEffect, useRef } from 'react'
 import { api } from '../api'
+import { CREATORS } from '../data/creators'
 import '../styles/SearchBar.css'
 
-export default function SearchBar({ onSelectVideo }) {
+export default function SearchBar({ onSelectVideo, onSelectCreator }) {
   const [open, setOpen] = useState(false)
   const [query, setQuery] = useState('')
   const [allVideos, setAllVideos] = useState(null)
@@ -54,16 +55,28 @@ export default function SearchBar({ onSelectVideo }) {
   }
 
   const query_ = query.trim().toLowerCase()
-  const results = query_ && allVideos
+
+  const videoResults = query_ && allVideos
     ? allVideos.filter(v =>
         v.title.toLowerCase().includes(query_) ||
         (v.category || '').toLowerCase().includes(query_) ||
         getCreatorName(v.creator).toLowerCase().includes(query_)
-      ).slice(0, 8)
+      ).slice(0, 6)
     : []
 
-  const handleSelect = (video) => {
+  const creatorResults = query_
+    ? CREATORS.filter(c => c.name.toLowerCase().includes(query_)).slice(0, 5)
+    : []
+
+  const hasResults = videoResults.length > 0 || creatorResults.length > 0
+
+  const handleSelectVideo = (video) => {
     onSelectVideo(video)
+    handleClose()
+  }
+
+  const handleSelectCreator = (creator) => {
+    onSelectCreator?.(creator)
     handleClose()
   }
 
@@ -77,7 +90,7 @@ export default function SearchBar({ onSelectVideo }) {
             type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Rechercher un film..."
+            placeholder="Rechercher un film ou un réalisateur..."
             className="search-input"
           />
           <button className="search-close-btn" onClick={handleClose}>✕</button>
@@ -86,28 +99,50 @@ export default function SearchBar({ onSelectVideo }) {
             <div className="search-results">
               {loading ? (
                 <div className="search-message">Chargement...</div>
-              ) : results.length === 0 ? (
+              ) : !hasResults ? (
                 <div className="search-message">Aucun résultat pour "{query.trim()}"</div>
               ) : (
-                results.map(video => (
-                  <div key={video.id} className="search-result-item" onClick={() => handleSelect(video)}>
-                    <div className="search-result-thumb">
-                      <img src={video.thumbnail || '/thumbnails/default.jpg'} alt={video.title} />
-                    </div>
-                    <div className="search-result-info">
-                      <div className="search-result-title">{video.title}</div>
-                      <div className="search-result-meta">
-                        {video.category} • {formatDuration(video.duration)} • {getCreatorName(video.creator)}
-                      </div>
-                    </div>
-                  </div>
-                ))
+                <>
+                  {videoResults.length > 0 && (
+                    <>
+                      <div className="search-section-label">Films</div>
+                      {videoResults.map(video => (
+                        <div key={video.id} className="search-result-item" onClick={() => handleSelectVideo(video)}>
+                          <div className="search-result-thumb">
+                            <img src={video.thumbnail || '/thumbnails/default.jpg'} alt={video.title} />
+                          </div>
+                          <div className="search-result-info">
+                            <div className="search-result-title">{video.title}</div>
+                            <div className="search-result-meta">
+                              {video.category} • {formatDuration(video.duration)} • {getCreatorName(video.creator)}
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </>
+                  )}
+
+                  {creatorResults.length > 0 && (
+                    <>
+                      <div className="search-section-label">Réalisateurs</div>
+                      {creatorResults.map(creator => (
+                        <div key={creator.id} className="search-result-item" onClick={() => handleSelectCreator(creator)}>
+                          <div className="search-result-avatar">{creator.avatar}</div>
+                          <div className="search-result-info">
+                            <div className="search-result-title">{creator.name}</div>
+                            <div className="search-result-meta">{creator.videos} films • {creator.followers} followers</div>
+                          </div>
+                        </div>
+                      ))}
+                    </>
+                  )}
+                </>
               )}
             </div>
           )}
         </div>
       ) : (
-        <button className="search-toggle-btn" onClick={handleOpen} title="Rechercher un film">
+        <button className="search-toggle-btn" onClick={handleOpen} title="Rechercher un film ou un réalisateur">
           🔍
         </button>
       )}

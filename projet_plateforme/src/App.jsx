@@ -15,6 +15,7 @@ function App() {
   const [showRegister, setShowRegister] = useState(false)
   const [currentPage, setCurrentPage] = useState('home')
   const [pendingVideo, setPendingVideo] = useState(null)
+  const [pendingCreatorLetter, setPendingCreatorLetter] = useState(null)
 
   useEffect(() => {
     const savedUser = localStorage.getItem('user')
@@ -70,6 +71,11 @@ function App() {
     setCurrentPage('home')
   }
 
+  const handleOpenCreatorFromSearch = (creator) => {
+    setPendingCreatorLetter(creator.name.charAt(0).toUpperCase())
+    setCurrentPage('realisateurs')
+  }
+
   const handleUpload = (uploadData) => {
     console.log('Upload data:', uploadData)
     alert('Merci ! Votre vidéo est en attente de modération. Vous serez notifié une fois acceptée.')
@@ -119,6 +125,7 @@ function App() {
           onLogout={handleLogout}
           pendingVideo={pendingVideo}
           onPendingVideoConsumed={() => setPendingVideo(null)}
+          onOpenCreator={handleOpenCreatorFromSearch}
         />
       )
     }
@@ -131,6 +138,8 @@ function App() {
           onProfileClick={() => setCurrentPage('profile')}
           onLogout={handleLogout}
           onOpenVideo={handleOpenVideoFromSearch}
+          pendingCreatorLetter={pendingCreatorLetter}
+          onPendingCreatorLetterConsumed={() => setPendingCreatorLetter(null)}
         />
       )
     }
@@ -144,6 +153,7 @@ function App() {
         onAdminClick={user?.role === 'admin' ? () => setCurrentPage('admin') : null}
         pendingVideo={pendingVideo}
         onPendingVideoConsumed={() => setPendingVideo(null)}
+        onOpenCreator={handleOpenCreatorFromSearch}
       />
     )
   }

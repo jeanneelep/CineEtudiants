@@ -1,22 +1,19 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Footer from '../components/Footer'
 import SearchBar from '../components/SearchBar'
+import { CREATORS } from '../data/creators'
 import '../styles/Realisateurs.css'
 
-const CREATORS = [
-  { id: 1, name: 'Alice Martin', avatar: 'A', videos: 5, followers: 234, bio: 'Réalisatrice passionnée par les histoires intimistes' },
-  { id: 2, name: 'Bob Leclerc', avatar: 'B', videos: 3, followers: 156, bio: 'Spécialiste de l\'animation numérique' },
-  { id: 3, name: 'Charlie Durand', avatar: 'C', videos: 7, followers: 456, bio: 'Documentariste engagé' },
-  { id: 4, name: 'Diana Rousseau', avatar: 'D', videos: 4, followers: 287, bio: 'Cinéaste expérimentale' },
-  { id: 5, name: 'Eve Moreau', avatar: 'E', videos: 2, followers: 98, bio: 'Réalisatrice en herbe' },
-  { id: 6, name: 'Frank Petit', avatar: 'F', videos: 6, followers: 389, bio: 'Spécialiste des courts dramatiques' },
-  { id: 7, name: 'Grace Chen', avatar: 'G', videos: 3, followers: 167, bio: 'Réalisatrice multimédia' },
-  { id: 8, name: 'Henry Laurent', avatar: 'H', videos: 5, followers: 312, bio: 'Réalisateur de poésie visuelle' },
-]
-
-export default function Realisateurs({ onNavigate, user, onProfileClick, onOpenVideo }) {
+export default function Realisateurs({ onNavigate, user, onProfileClick, onOpenVideo, pendingCreatorLetter, onPendingCreatorLetterConsumed }) {
   const [selectedLetter, setSelectedLetter] = useState('A')
   const [currentPage, setCurrentPage] = useState(1)
+
+  useEffect(() => {
+    if (pendingCreatorLetter) {
+      handleLetterClick(pendingCreatorLetter)
+      onPendingCreatorLetterConsumed?.()
+    }
+  }, [pendingCreatorLetter])
 
   const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('')
 
@@ -55,7 +52,7 @@ export default function Realisateurs({ onNavigate, user, onProfileClick, onOpenV
             )}
           </nav>
           <div className="header-right">
-            <SearchBar onSelectVideo={onOpenVideo} />
+            <SearchBar onSelectVideo={onOpenVideo} onSelectCreator={(creator) => handleLetterClick(creator.name.charAt(0).toUpperCase())} />
             {user ? (
               <button className="user-profile-btn" onClick={onProfileClick}>
                 {getAvatarUrl(user.avatar) ? (
