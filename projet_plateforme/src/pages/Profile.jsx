@@ -15,6 +15,22 @@ export default function Profile({ user, token, onBack, onUploadClick, onLogout, 
   const [playingVideo, setPlayingVideo] = useState(null)
   const [avatarSaving, setAvatarSaving] = useState(false)
   const avatarInputRef = useRef(null)
+  const [videoLikes, setVideoLikes] = useState(null)
+  const [videoFavorites, setVideoFavorites] = useState(null)
+  const [videoComments, setVideoComments] = useState([])
+  const [newComment, setNewComment] = useState('')
+  const [commentLoading, setCommentLoading] = useState(false)
+  const [commentReplies, setCommentReplies] = useState({})
+  const [replyingTo, setReplyingTo] = useState(null)
+  const [replyContent, setReplyContent] = useState('')
+  const [replyLoading, setReplyLoading] = useState(false)
+  const [editingCommentId, setEditingCommentId] = useState(null)
+  const [editContent, setEditContent] = useState('')
+  const [editLoading, setEditLoading] = useState(false)
+  const [openMenuId, setOpenMenuId] = useState(null)
+  const [editingReplyId, setEditingReplyId] = useState(null)
+  const [editReplyContent, setEditReplyContent] = useState('')
+  const [openReplyMenuId, setOpenReplyMenuId] = useState(null)
 
   useEffect(() => {
     if (user?.id) {
@@ -23,6 +39,228 @@ export default function Profile({ user, token, onBack, onUploadClick, onLogout, 
       loadMyVideos()
     }
   }, [user?.id])
+
+  useEffect(() => {
+    if (playingVideo) {
+      loadVideoDetails()
+    }
+  }, [playingVideo])
+
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (e.target.closest('.kebab-menu-container')) return
+      setOpenMenuId(null)
+    }
+    document.addEventListener('click', handleClickOutside)
+    return () => document.removeEventListener('click', handleClickOutside)
+  }, [])
+
+  const loadVideoDetails = async () => {
+    try {
+      const likes = await api.getVideoLikes(playingVideo.id)
+      const comments = await api.getVideoComments(playingVideo.id)
+      setVideoLikes(likes)
+      setVideoComments(Array.isArray(comments) ? comments : [])
+      const favs = await api.getVideoFavoriteStatus(token, playingVideo.id)
+      setVideoFavorites(favs)
+      if (Array.isArray(comments)) {
+        const repliesMap = {}
+        for (const comment of comments) {
+          try {
+            const replies = await api.getCommentReplies(comment.id)
+            repliesMap[comment.id] = Array.isArray(replies) ? replies : []
+          } catch (err) {
+            repliesMap[comment.id] = []
+          }
+        }
+        setCommentReplies(repliesMap)
+      }
+    } catch (err) {
+      console.error('Erreur chargement détails:', err)
+    }
+  }
+
+  const loadCommentReplies = async (commentId) => {
+    try {
+      const replies = await api.getCommentReplies(commentId)
+      setCommentReplies(prev => ({
+        ...prev,
+        [commentId]: Array.isArray(replies) ? replies : []
+      }))
+    } catch (err) {
+      console.error('Erreur chargement réponses:', err)
+    }
+  }
+
+  const handleLike = async () => {
+    if (!user || !token) {
+      alert('Veuillez vous connecter')
+      return
+    }
+    try {
+      await api.toggleLike(token, playingVideo.id)
+      await loadVideoDetails()
+    } catch (err) {
+      console.error('Erreur like:', err)
+    }
+  }
+
+  const handleAddComment = async () => {
+    if (!user || !token) {
+      alert('Veuillez vous connecter pour commenter')
+      return
+    }
+    if (!newComment.trim()) {
+      alert('Veuillez écrire un commentaire')
+      return
+    }
+
+    setCommentLoading(true)
+    try {
+      const result = await api.createComment(token, playingVideo.id, newComment)
+      if (result.error) {
+        alert('Erreur: ' + result.error)
+      } else {
+        setNewComment('')
+        await loadVideoDetails()
+      }
+    } catch (err) {
+      console.error('Erreur commentaire:', err)
+      alert('Erreur lors de l\'envoi du commentaire: ' + err.message)
+    } finally {
+      setCommentLoading(false)
+    }
+  }
+
+  const handleEditComment = (comment) => {
+    setEditingCommentId(comment.id)
+    setEditContent(comment.content)
+  }
+
+  const handleCancelEdit = () => {
+    setEditingCommentId(null)
+    setEditContent('')
+  }
+
+  const handleSaveEdit = async (commentId) => {
+    if (!token || !editContent.trim()) {
+      alert('Le contenu du commentaire ne peut pas être vide')
+      return
+    }
+
+    setEditLoading(true)
+    try {
+      const result = await api.editComment(token, commentId, editContent)
+      if (result.error) {
+        alert('Erreur: ' + result.error)
+      } else {
+        setEditingCommentId(null)
+        setEditContent('')
+        await loadVideoDetails()
+      }
+    } catch (err) {
+      console.error('Erreur édition:', err)
+      alert('Erreur lors de la modification: ' + err.message)
+    } finally {
+      setEditLoading(false)
+    }
+  }
+
+  const handleDeleteComment = async (commentId) => {
+    if (!user || !window.confirm('Êtes-vous sûr de vouloir supprimer ce commentaire ?')) return
+    try {
+      const result = await api.deleteComment(token, commentId)
+      if (result.error) {
+        alert('Erreur: ' + result.error)
+      } else {
+        await loadVideoDetails()
+      }
+    } catch (err) {
+      console.error('Erreur suppression:', err.message)
+      alert('Erreur suppression: ' + err.message)
+    }
+  }
+
+  const handleReply = async (commentId) => {
+    if (!user || !token) {
+      alert('Veuillez vous connecter pour répondre')
+      return
+    }
+    if (!replyContent.trim()) {
+      alert('Veuillez écrire une réponse')
+      return
+    }
+
+    setReplyLoading(true)
+    try {
+      const result = await api.replyToComment(token, commentId, replyContent)
+      if (result.error) {
+        alert('Erreur: ' + result.error)
+      } else {
+        setReplyContent('')
+        setReplyingTo(null)
+        await loadCommentReplies(commentId)
+      }
+    } catch (err) {
+      console.error('Erreur réponse:', err)
+      alert('Erreur lors de l\'envoi de la réponse: ' + err.message)
+    } finally {
+      setReplyLoading(false)
+    }
+  }
+
+  const handleEditReply = (reply) => {
+    setEditingReplyId(reply.id)
+    setEditReplyContent(reply.content)
+  }
+
+  const handleCancelReplyEdit = () => {
+    setEditingReplyId(null)
+    setEditReplyContent('')
+  }
+
+  const handleSaveReplyEdit = async (replyId, commentId) => {
+    if (!token || !editReplyContent.trim()) {
+      alert('Le contenu de la réponse ne peut pas être vide')
+      return
+    }
+
+    setEditLoading(true)
+    try {
+      const result = await api.editComment(token, replyId, editReplyContent)
+      if (result.error) {
+        alert('Erreur: ' + result.error)
+      } else {
+        setEditingReplyId(null)
+        setEditReplyContent('')
+        await loadCommentReplies(commentId)
+      }
+    } catch (err) {
+      console.error('Erreur édition réponse:', err)
+      alert('Erreur lors de la modification: ' + err.message)
+    } finally {
+      setEditLoading(false)
+    }
+  }
+
+  const handleDeleteReply = async (replyId, commentId) => {
+    if (!user || !window.confirm('Êtes-vous sûr de vouloir supprimer cette réponse ?')) return
+    try {
+      const result = await api.deleteComment(token, replyId)
+      if (result.error) {
+        alert('Erreur: ' + result.error)
+      } else {
+        await loadCommentReplies(commentId)
+      }
+    } catch (err) {
+      console.error('Erreur suppression réponse:', err.message)
+      alert('Erreur suppression: ' + err.message)
+    }
+  }
+
+  const formatTime = (dateString) => {
+    return new Date(dateString).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })
+  }
 
   const loadMyVideos = async () => {
     setMyVideosLoading(true)
@@ -304,7 +542,7 @@ export default function Profile({ user, token, onBack, onUploadClick, onLogout, 
               ) : (
                 <div className="favorites-grid">
                   {favorites.map(video => (
-                    <div key={video.id} className="favorite-card">
+                    <div key={video.id} className="favorite-card" onClick={() => setPlayingVideo(video)}>
                       <div className="favorite-thumbnail">
                         <img
                           src={video.thumbnail || 'https://via.placeholder.com/300x200?text=No+Image'}
@@ -319,7 +557,7 @@ export default function Profile({ user, token, onBack, onUploadClick, onLogout, 
                         <h4>{video.title}</h4>
                         <p className="favorite-meta">{video.category} • {formatDuration(video.duration)}</p>
                         <p className="favorite-creator">par {getCreatorName(video.creator)}</p>
-                        <div className="favorite-actions">
+                        <div className="favorite-actions" onClick={(e) => e.stopPropagation()}>
                           <FavoriteButton
                             videoId={video.id}
                             user={user}
@@ -339,13 +577,225 @@ export default function Profile({ user, token, onBack, onUploadClick, onLogout, 
       </main>
 
       {playingVideo && (
-        <div className="profile-video-modal-overlay" onClick={() => setPlayingVideo(null)}>
-          <div className="profile-video-modal" onClick={(e) => e.stopPropagation()}>
-            <button className="profile-video-modal-close" onClick={() => setPlayingVideo(null)}>✕</button>
-            <video src={getVideoUrl(playingVideo.url)} controls autoPlay className="profile-video-player" />
-            <div className="profile-video-modal-info">
-              <h3>{playingVideo.title}</h3>
-              <p>{playingVideo.category} • {formatDuration(playingVideo.duration)}</p>
+        <div className="modal-overlay" onClick={() => setPlayingVideo(null)}>
+          <div className="modal modal-large" onClick={(e) => e.stopPropagation()}>
+            <button className="modal-close" onClick={() => setPlayingVideo(null)}>✕</button>
+            <div className="video-container">
+              <video src={getVideoUrl(playingVideo.url)} controls autoPlay className="video-player" />
+            </div>
+            <div className="video-info">
+              <h2>{playingVideo.title}</h2>
+              <p className="info-meta">{playingVideo.category} • {formatDuration(playingVideo.duration)}</p>
+              {playingVideo.creator && <p className="info-creator">Réalisateur: {getCreatorName(playingVideo.creator)}</p>}
+              {playingVideo.description && <p style={{marginTop: '1rem', color: '#cbd5e1'}}>{playingVideo.description}</p>}
+
+              <div className="video-actions">
+                <button className={`like-btn ${videoLikes?.userLiked ? 'liked' : ''}`} onClick={handleLike}>
+                  ❤️ {videoLikes?.count || 0}
+                </button>
+                <FavoriteButton videoId={playingVideo.id} user={user} token={token} isFavorite={videoFavorites?.isFavorite} count={videoFavorites?.count} />
+              </div>
+
+              <div className="comments-section">
+                <h3>Commentaires ({videoComments.length})</h3>
+
+                {user && (
+                  <div className="comment-form">
+                    <textarea
+                      value={newComment}
+                      onChange={(e) => setNewComment(e.target.value)}
+                      placeholder="Ajouter un commentaire..."
+                      className="comment-input"
+                    />
+                    <button
+                      onClick={handleAddComment}
+                      disabled={commentLoading || !newComment.trim()}
+                      className="comment-submit"
+                    >
+                      {commentLoading ? 'Envoi...' : 'Poster'}
+                    </button>
+                  </div>
+                )}
+
+                <div className="comments-list">
+                  {videoComments.map(comment => (
+                    <div key={comment.id} className="comment-item">
+                      <div className="comment-header">
+                        <strong>@{comment.user.name}</strong>
+                        <div className="comment-meta">
+                          <span className="comment-time">{formatTime(comment.createdAt)}</span>
+                          {user?.id === comment.userId && (
+                            <div className="kebab-menu-container">
+                              <button
+                                className="kebab-button"
+                                onClick={() => setOpenMenuId(openMenuId === comment.id ? null : comment.id)}
+                                title="Options"
+                              >
+                                •••
+                              </button>
+                              {openMenuId === comment.id && (
+                                <div className="kebab-menu">
+                                  <button
+                                    className="kebab-item"
+                                    onClick={() => {
+                                      handleEditComment(comment)
+                                      setOpenMenuId(null)
+                                    }}
+                                  >
+                                    Modifier
+                                  </button>
+                                  <button
+                                    className="kebab-item kebab-delete"
+                                    onClick={() => {
+                                      handleDeleteComment(comment.id)
+                                      setOpenMenuId(null)
+                                    }}
+                                  >
+                                    Supprimer
+                                  </button>
+                                </div>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                      {editingCommentId === comment.id ? (
+                        <div className="comment-edit-form">
+                          <textarea
+                            value={editContent}
+                            onChange={(e) => setEditContent(e.target.value)}
+                            className="edit-input"
+                            placeholder="Modifier votre commentaire..."
+                          />
+                          <div className="edit-buttons">
+                            <button
+                              onClick={() => handleSaveEdit(comment.id)}
+                              disabled={editLoading || !editContent.trim()}
+                              className="edit-save-btn"
+                            >
+                              {editLoading ? 'Sauvegarde...' : 'Sauvegarder'}
+                            </button>
+                            <button
+                              onClick={handleCancelEdit}
+                              className="edit-cancel-btn"
+                            >
+                              Annuler
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        <p className="comment-text">{comment.content}</p>
+                      )}
+
+                      {user && !editingCommentId && (
+                        <div className="comment-footer">
+                          <button
+                            className="reply-btn"
+                            onClick={() => setReplyingTo(replyingTo === comment.id ? null : comment.id)}
+                          >
+                            {replyingTo === comment.id ? 'Annuler' : 'Répondre'}
+                          </button>
+                        </div>
+                      )}
+
+                      {replyingTo === comment.id && user && (
+                        <div className="reply-form">
+                          <textarea
+                            value={replyContent}
+                            onChange={(e) => setReplyContent(e.target.value)}
+                            placeholder="Votre réponse..."
+                            className="reply-input"
+                          />
+                          <button
+                            onClick={() => handleReply(comment.id)}
+                            disabled={replyLoading || !replyContent.trim()}
+                            className="reply-submit"
+                          >
+                            {replyLoading ? 'Envoi...' : 'Envoyer'}
+                          </button>
+                        </div>
+                      )}
+
+                      {commentReplies[comment.id] && commentReplies[comment.id].length > 0 && (
+                        <div className="replies-container">
+                          {commentReplies[comment.id].map(reply => (
+                            <div key={reply.id} className="reply-item">
+                              <div className="reply-header">
+                                <strong>@{reply.user.name}</strong>
+                                <div className="comment-meta">
+                                  <span className="comment-time">{formatTime(reply.createdAt)}</span>
+                                  {user?.id === reply.userId && (
+                                    <div className="kebab-menu-container">
+                                      <button
+                                        className="kebab-button"
+                                        onClick={() => setOpenReplyMenuId(openReplyMenuId === reply.id ? null : reply.id)}
+                                        title="Options"
+                                      >
+                                        •••
+                                      </button>
+                                      {openReplyMenuId === reply.id && (
+                                        <div className="kebab-menu">
+                                          <button
+                                            className="kebab-item"
+                                            onClick={() => {
+                                              handleEditReply(reply)
+                                              setOpenReplyMenuId(null)
+                                            }}
+                                          >
+                                            Modifier
+                                          </button>
+                                          <button
+                                            className="kebab-item kebab-delete"
+                                            onClick={() => {
+                                              handleDeleteReply(reply.id, comment.id)
+                                              setOpenReplyMenuId(null)
+                                            }}
+                                          >
+                                            Supprimer
+                                          </button>
+                                        </div>
+                                      )}
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+
+                              {editingReplyId === reply.id ? (
+                                <div className="comment-edit-form">
+                                  <textarea
+                                    value={editReplyContent}
+                                    onChange={(e) => setEditReplyContent(e.target.value)}
+                                    className="edit-input"
+                                    placeholder="Modifier votre réponse..."
+                                  />
+                                  <div className="edit-buttons">
+                                    <button
+                                      onClick={() => handleSaveReplyEdit(reply.id, comment.id)}
+                                      disabled={editLoading || !editReplyContent.trim()}
+                                      className="edit-save-btn"
+                                    >
+                                      {editLoading ? 'Sauvegarde...' : 'Sauvegarder'}
+                                    </button>
+                                    <button
+                                      onClick={handleCancelReplyEdit}
+                                      className="edit-cancel-btn"
+                                    >
+                                      Annuler
+                                    </button>
+                                  </div>
+                                </div>
+                              ) : (
+                                <p className="reply-text">{reply.content}</p>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
           </div>
         </div>
