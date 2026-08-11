@@ -2,7 +2,6 @@ import { useState, useEffect, useRef } from 'react'
 import { api } from '../api'
 import Footer from '../components/Footer'
 import FavoriteButton from '../components/FavoriteButton'
-import SearchBar from '../components/SearchBar'
 import '../styles/Profile.css'
 
 export default function Profile({ user, token, onBack, onUploadClick, onLogout, onUserUpdate }) {
@@ -378,7 +377,7 @@ export default function Profile({ user, token, onBack, onUploadClick, onLogout, 
         <div className="profile-header-content">
           <button onClick={onBack} className="back-btn">← Retour</button>
           <h1>Profil</h1>
-          <SearchBar onSelectVideo={setPlayingVideo} />
+          <div></div>
         </div>
       </header>
 
