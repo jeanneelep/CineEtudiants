@@ -9,7 +9,7 @@ export const getVideoComments = async (req: AuthRequest, res: Response) => {
     const { id } = req.params as { id: string }
 
     const comments = await prisma.comment.findMany({
-      where: { videoId: id, status: { not: 'rejected' } },
+      where: { videoId: id, status: { not: 'rejected' }, parentCommentId: null },
       include: { user: { select: { id: true, name: true, avatar: true } } },
       orderBy: { createdAt: 'desc' }
     })
