@@ -300,6 +300,12 @@ export default function Explore({ onNavigate, user, token, onProfileClick, onLog
     return `http://localhost:5000${url}`
   }
 
+  const getAvatarUrl = (avatarPath) => {
+    if (!avatarPath) return null
+    if (avatarPath.startsWith('http')) return avatarPath
+    return `http://localhost:5000${avatarPath}`
+  }
+
   const filteredVideos = videos.filter(video => {
     if (filters.category && video.category !== filters.category) return false
     if (filters.duration) {
@@ -344,7 +350,11 @@ export default function Explore({ onNavigate, user, token, onProfileClick, onLog
             {user ? (
               <div className="user-menu">
                 <button className="user-profile-btn" onClick={onProfileClick}>
-                  {user.name.substring(0, 2).toUpperCase()}
+                  {getAvatarUrl(user.avatar) ? (
+                    <img src={getAvatarUrl(user.avatar)} alt={user.name} className="user-profile-avatar" />
+                  ) : (
+                    user.name.substring(0, 2).toUpperCase()
+                  )}
                 </button>
               </div>
             ) : (

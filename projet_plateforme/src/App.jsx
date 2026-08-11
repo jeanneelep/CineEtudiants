@@ -47,6 +47,14 @@ function App() {
     setCurrentPage('home')
   }
 
+  const handleUserUpdate = (updatedFields) => {
+    setUser(prev => {
+      const merged = { ...prev, ...updatedFields }
+      localStorage.setItem('user', JSON.stringify(merged))
+      return merged
+    })
+  }
+
   const handleLogout = () => {
     setUser(null)
     setToken(null)
@@ -77,9 +85,11 @@ function App() {
       return (
         <Profile
           user={user}
+          token={token}
           onBack={() => setCurrentPage('home')}
           onUploadClick={() => setCurrentPage('upload')}
           onLogout={handleLogout}
+          onUserUpdate={handleUserUpdate}
         />
       )
     }

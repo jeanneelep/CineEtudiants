@@ -289,6 +289,12 @@ export default function Home({ onNavigate, user, token, onProfileClick, onLogout
     return `http://localhost:5000${url}`
   }
 
+  const getAvatarUrl = (avatarPath) => {
+    if (!avatarPath) return null
+    if (avatarPath.startsWith('http')) return avatarPath
+    return `http://localhost:5000${avatarPath}`
+  }
+
   const recentVideos = [...videos].reverse()
   const featuredVideos = videos.slice(0, 3)
 
@@ -316,7 +322,11 @@ export default function Home({ onNavigate, user, token, onProfileClick, onLogout
                   </button>
                 )}
                 <button className="user-profile-btn" onClick={onProfileClick}>
-                  {user.name.substring(0, 2).toUpperCase()}
+                  {getAvatarUrl(user.avatar) ? (
+                    <img src={getAvatarUrl(user.avatar)} alt={user.name} className="user-profile-avatar" />
+                  ) : (
+                    user.name.substring(0, 2).toUpperCase()
+                  )}
                 </button>
               </div>
             ) : (

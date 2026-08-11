@@ -187,6 +187,19 @@ export const api = {
     return res.json()
   },
 
+  uploadAvatar: async (token, userId, file) => {
+    const formData = new FormData()
+    formData.append('avatar', file)
+    const res = await fetch(`${API_URL}/users/${userId}/avatar`, {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${token}` },
+      body: formData
+    })
+    const data = await res.json()
+    if (!res.ok) throw new Error(data.error || 'Erreur upload avatar')
+    return data
+  },
+
   updateUserProfile: async (token, userId, profileData) => {
     const res = await fetch(`${API_URL}/users/${userId}`, {
       method: 'PUT',

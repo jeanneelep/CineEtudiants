@@ -1,6 +1,7 @@
 import express from 'express'
 import cors from 'cors'
 import dotenv from 'dotenv'
+import path from 'path'
 import authRoutes from './routes/authRoutes'
 import videoRoutes from './routes/videoRoutes'
 import commentRoutes from './routes/commentRoutes'
@@ -24,6 +25,7 @@ const PORT = process.env.PORT || 5000
 
 app.use(cors())
 app.use(express.json())
+app.use('/uploads/avatars', express.static(path.join(__dirname, '../uploads/avatars')))
 
 app.get('/api/health', (_req, res) => {
   res.json({ status: 'ok', message: 'Server is running' })

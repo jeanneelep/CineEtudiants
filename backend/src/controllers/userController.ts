@@ -83,6 +83,41 @@ export const getUserVideos = async (req: AuthRequest, res: Response) => {
   }
 }
 
+export const uploadUserAvatar = async (req: AuthRequest, res: Response) => {
+  try {
+    const { id } = req.params as { id: string }
+    const userId = req.userId
+    const file = (req as any).file
+
+    if (id !== userId) {
+      return res.status(403).json({ error: 'Cannot update other users' })
+    }
+
+    if (!file) {
+      return res.status(400).json({ error: 'No image file uploaded' })
+    }
+
+    const avatarUrl = `/uploads/avatars/${file.filename}`
+
+    const user = await prisma.user.update({
+      where: { id },
+      data: { avatar: avatarUrl },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        bio: true,
+        avatar: true,
+        createdAt: true
+      }
+    })
+
+    res.json(user)
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to upload avatar' })
+  }
+}
+
 export const updateUserProfile = async (req: AuthRequest, res: Response) => {
   try {
     const { id } = req.params as { id: string }

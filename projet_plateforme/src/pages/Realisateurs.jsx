@@ -34,6 +34,12 @@ export default function Realisateurs({ onNavigate, user, onProfileClick }) {
     setCurrentPage(1)
   }
 
+  const getAvatarUrl = (avatarPath) => {
+    if (!avatarPath) return null
+    if (avatarPath.startsWith('http')) return avatarPath
+    return `http://localhost:5000${avatarPath}`
+  }
+
   return (
     <div className="realisateurs-page">
       <header className="realisateurs-header">
@@ -50,7 +56,11 @@ export default function Realisateurs({ onNavigate, user, onProfileClick }) {
           <div className="header-right">
             {user ? (
               <button className="user-profile-btn" onClick={onProfileClick}>
-                {user.name.substring(0, 2).toUpperCase()}
+                {getAvatarUrl(user.avatar) ? (
+                  <img src={getAvatarUrl(user.avatar)} alt={user.name} className="user-profile-avatar" />
+                ) : (
+                  user.name.substring(0, 2).toUpperCase()
+                )}
               </button>
             ) : (
               <button className="login-btn">Se connecter</button>

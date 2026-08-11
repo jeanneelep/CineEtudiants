@@ -88,7 +88,7 @@ export const verifyEmail = async (req: AuthRequest, res: Response) => {
 
     res.json({
       message: 'Email verified successfully',
-      user: { id: updatedUser.id, email: updatedUser.email, name: updatedUser.name, emailVerified: true, role: updatedUser.role },
+      user: { id: updatedUser.id, email: updatedUser.email, name: updatedUser.name, emailVerified: true, role: updatedUser.role, avatar: updatedUser.avatar },
       token
     })
   } catch (error) {
@@ -166,7 +166,8 @@ export const login = async (req: AuthRequest, res: Response) => {
         email: user.email,
         name: user.name,
         emailVerified: user.emailVerified,
-        role: user.role
+        role: user.role,
+        avatar: user.avatar
       },
       token
     })

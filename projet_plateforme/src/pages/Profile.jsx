@@ -1,10 +1,10 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { api } from '../api'
 import Footer from '../components/Footer'
 import FavoriteButton from '../components/FavoriteButton'
 import '../styles/Profile.css'
 
-export default function Profile({ user, token, onBack, onUploadClick, onLogout }) {
+export default function Profile({ user, token, onBack, onUploadClick, onLogout, onUserUpdate }) {
   const [profile, setProfile] = useState(null)
   const [loading, setLoading] = useState(true)
   const [favorites, setFavorites] = useState([])
@@ -13,6 +13,8 @@ export default function Profile({ user, token, onBack, onUploadClick, onLogout }
   const [myVideosLoading, setMyVideosLoading] = useState(false)
   const [activeTab, setActiveTab] = useState('profile') // 'profile' | 'favorites' | 'videos'
   const [playingVideo, setPlayingVideo] = useState(null)
+  const [avatarSaving, setAvatarSaving] = useState(false)
+  const avatarInputRef = useRef(null)
 
   useEffect(() => {
     if (user?.id) {
@@ -71,6 +73,58 @@ export default function Profile({ user, token, onBack, onUploadClick, onLogout }
     return `http://localhost:5000${url}`
   }
 
+  const getAvatarUrl = (avatarPath) => {
+    if (!avatarPath) return null
+    if (avatarPath.startsWith('http')) return avatarPath
+    return `http://localhost:5000${avatarPath}`
+  }
+
+  const handleAvatarButtonClick = () => {
+    avatarInputRef.current?.click()
+  }
+
+  const handleAvatarFileChange = async (e) => {
+    const file = e.target.files?.[0]
+    e.target.value = ''
+    if (!file) return
+
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp']
+    if (!allowedTypes.includes(file.type)) {
+      alert('Format non supporté. Utilisez JPEG, PNG ou WEBP.')
+      return
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      alert('Image trop lourde (max 5MB).')
+      return
+    }
+
+    setAvatarSaving(true)
+    try {
+      const updatedUser = await api.uploadAvatar(token, user.id, file)
+      setProfile(prev => ({ ...prev, avatar: updatedUser.avatar }))
+      onUserUpdate?.({ avatar: updatedUser.avatar })
+    } catch (err) {
+      console.error('Erreur upload avatar:', err)
+      alert(err.message || 'Erreur lors de l\'envoi de la photo')
+    } finally {
+      setAvatarSaving(false)
+    }
+  }
+
+  const handleRemoveAvatar = async () => {
+    setAvatarSaving(true)
+    try {
+      const updatedUser = await api.updateUserProfile(token, user.id, { avatar: null })
+      setProfile(prev => ({ ...prev, avatar: updatedUser.avatar }))
+      onUserUpdate?.({ avatar: null })
+    } catch (err) {
+      console.error('Erreur suppression avatar:', err)
+      alert('Erreur lors de la suppression de la photo')
+    } finally {
+      setAvatarSaving(false)
+    }
+  }
+
   const getCreatorName = (creator) => {
     return typeof creator === 'string' ? creator : creator?.name || 'Inconnu'
   }
@@ -92,7 +146,35 @@ export default function Profile({ user, token, onBack, onUploadClick, onLogout }
       <main className="profile-main">
         <div className="profile-card">
           <div className="profile-header-section">
-            <div className="avatar">{user.name.charAt(0).toUpperCase()}</div>
+            <div className="avatar-wrapper">
+              <div className="avatar">
+                {getAvatarUrl(profile?.avatar) ? (
+                  <img src={getAvatarUrl(profile.avatar)} alt={user.name} className="avatar-image" />
+                ) : (
+                  user.name.charAt(0).toUpperCase()
+                )}
+              </div>
+              <button
+                className="avatar-edit-btn"
+                onClick={handleAvatarButtonClick}
+                disabled={avatarSaving}
+                title="Changer la photo de profil"
+              >
+                {avatarSaving ? '...' : '📷'}
+              </button>
+              <input
+                ref={avatarInputRef}
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                onChange={handleAvatarFileChange}
+                style={{ display: 'none' }}
+              />
+              {profile?.avatar && (
+                <button className="avatar-remove-btn" onClick={handleRemoveAvatar} disabled={avatarSaving}>
+                  Retirer la photo
+                </button>
+              )}
+            </div>
             <div className="profile-info">
               <h2 className="profile-name">{user.name}</h2>
               <p className="profile-email">{user.email}</p>
