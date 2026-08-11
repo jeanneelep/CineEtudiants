@@ -12,6 +12,7 @@ export default function Profile({ user, token, onBack, onUploadClick, onLogout }
   const [myVideos, setMyVideos] = useState([])
   const [myVideosLoading, setMyVideosLoading] = useState(false)
   const [activeTab, setActiveTab] = useState('profile') // 'profile' | 'favorites' | 'videos'
+  const [playingVideo, setPlayingVideo] = useState(null)
 
   useEffect(() => {
     if (user?.id) {
@@ -183,7 +184,7 @@ export default function Profile({ user, token, onBack, onUploadClick, onLogout }
                     <div
                       key={video.id}
                       className="favorite-card"
-                      onClick={() => window.open(getVideoUrl(video.url), '_blank')}
+                      onClick={() => setPlayingVideo(video)}
                     >
                       <div className="favorite-thumbnail">
                         <img
@@ -254,6 +255,19 @@ export default function Profile({ user, token, onBack, onUploadClick, onLogout }
           )}
         </div>
       </main>
+
+      {playingVideo && (
+        <div className="profile-video-modal-overlay" onClick={() => setPlayingVideo(null)}>
+          <div className="profile-video-modal" onClick={(e) => e.stopPropagation()}>
+            <button className="profile-video-modal-close" onClick={() => setPlayingVideo(null)}>✕</button>
+            <video src={getVideoUrl(playingVideo.url)} controls autoPlay className="profile-video-player" />
+            <div className="profile-video-modal-info">
+              <h3>{playingVideo.title}</h3>
+              <p>{playingVideo.category} • {formatDuration(playingVideo.duration)}</p>
+            </div>
+          </div>
+        </div>
+      )}
 
       <Footer />
     </div>
