@@ -60,6 +60,40 @@ export const getUserProfile = async (req: AuthRequest, res: Response) => {
   }
 }
 
+export const getCreators = async (req: AuthRequest, res: Response) => {
+  try {
+    const users = await prisma.user.findMany({
+      where: { videos: { some: { status: 'approved' } } },
+      select: {
+        id: true,
+        name: true,
+        avatar: true,
+        bio: true,
+        videos: { where: { status: 'approved' }, select: { id: true } }
+      }
+    })
+
+    const creators = await Promise.all(users.map(async (u) => {
+      const videoIds = u.videos.map(v => v.id)
+      const likesReceived = await prisma.like.count({ where: { videoId: { in: videoIds } } })
+      return {
+        id: u.id,
+        name: u.name,
+        avatar: u.avatar,
+        bio: u.bio,
+        videoCount: u.videos.length,
+        likesReceived
+      }
+    }))
+
+    creators.sort((a, b) => a.name.localeCompare(b.name))
+
+    res.json(creators)
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to fetch creators' })
+  }
+}
+
 export const getUserVideos = async (req: AuthRequest, res: Response) => {
   try {
     const { id: userId } = req.params as { id: string }

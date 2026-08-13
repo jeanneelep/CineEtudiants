@@ -1,12 +1,12 @@
 import { useState, useEffect, useRef } from 'react'
 import { api } from '../api'
-import { CREATORS } from '../data/creators'
 import '../styles/SearchBar.css'
 
 export default function SearchBar({ onSelectVideo, onSelectCreator }) {
   const [open, setOpen] = useState(false)
   const [query, setQuery] = useState('')
   const [allVideos, setAllVideos] = useState(null)
+  const [allCreators, setAllCreators] = useState(null)
   const [loading, setLoading] = useState(false)
   const containerRef = useRef(null)
   const inputRef = useRef(null)
@@ -24,14 +24,19 @@ export default function SearchBar({ onSelectVideo, onSelectCreator }) {
   const handleOpen = async () => {
     setOpen(true)
     setTimeout(() => inputRef.current?.focus(), 0)
-    if (allVideos === null) {
+    if (allVideos === null || allCreators === null) {
       setLoading(true)
       try {
-        const data = await api.getAllVideos()
-        setAllVideos(Array.isArray(data) ? data : [])
+        const [videos, creators] = await Promise.all([
+          api.getAllVideos(),
+          api.getCreators()
+        ])
+        setAllVideos(Array.isArray(videos) ? videos : [])
+        setAllCreators(Array.isArray(creators) ? creators : [])
       } catch (err) {
-        console.error('Erreur recherche vidéos:', err)
+        console.error('Erreur recherche:', err)
         setAllVideos([])
+        setAllCreators([])
       } finally {
         setLoading(false)
       }
@@ -45,6 +50,12 @@ export default function SearchBar({ onSelectVideo, onSelectCreator }) {
 
   const getCreatorName = (creator) => {
     return typeof creator === 'string' ? creator : creator?.name || 'Inconnu'
+  }
+
+  const getAvatarUrl = (avatarPath) => {
+    if (!avatarPath) return null
+    if (avatarPath.startsWith('http')) return avatarPath
+    return `http://localhost:5000${avatarPath}`
   }
 
   const formatDuration = (seconds) => {
@@ -64,8 +75,8 @@ export default function SearchBar({ onSelectVideo, onSelectCreator }) {
       ).slice(0, 6)
     : []
 
-  const creatorResults = query_
-    ? CREATORS.filter(c => c.name.toLowerCase().includes(query_)).slice(0, 5)
+  const creatorResults = query_ && allCreators
+    ? allCreators.filter(c => c.name.toLowerCase().includes(query_)).slice(0, 5)
     : []
 
   const hasResults = videoResults.length > 0 || creatorResults.length > 0
@@ -127,10 +138,16 @@ export default function SearchBar({ onSelectVideo, onSelectCreator }) {
                       <div className="search-section-label">Réalisateurs</div>
                       {creatorResults.map(creator => (
                         <div key={creator.id} className="search-result-item" onClick={() => handleSelectCreator(creator)}>
-                          <div className="search-result-avatar">{creator.avatar}</div>
+                          <div className="search-result-avatar">
+                            {getAvatarUrl(creator.avatar) ? (
+                              <img src={getAvatarUrl(creator.avatar)} alt={creator.name} />
+                            ) : (
+                              creator.name.substring(0, 2).toUpperCase()
+                            )}
+                          </div>
                           <div className="search-result-info">
                             <div className="search-result-title">{creator.name}</div>
-                            <div className="search-result-meta">{creator.videos} films • {creator.followers} followers</div>
+                            <div className="search-result-meta">{creator.videoCount} film{creator.videoCount > 1 ? 's' : ''} • {creator.likesReceived} likes</div>
                           </div>
                         </div>
                       ))}

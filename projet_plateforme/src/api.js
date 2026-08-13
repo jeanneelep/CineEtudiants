@@ -187,6 +187,11 @@ export const api = {
     return res.json()
   },
 
+  getCreators: async () => {
+    const res = await fetch(`${API_URL}/users`)
+    return res.json()
+  },
+
   uploadAvatar: async (token, userId, file) => {
     const formData = new FormData()
     formData.append('avatar', file)
