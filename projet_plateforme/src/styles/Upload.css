@@ -2,12 +2,12 @@
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  background: linear-gradient(135deg, #0f172a 0%, #1a1f3a 100%);
+  background: linear-gradient(135deg, #10141A 0%, #171D28 100%);
 }
 
 /* ============== HEADER ============== */
 .upload-header {
-  background: linear-gradient(180deg, rgba(15, 23, 42, 0.95) 0%, rgba(15, 23, 42, 0.5) 100%);
+  background: linear-gradient(180deg, rgba(16, 20, 26, 0.95) 0%, rgba(16, 20, 26, 0.5) 100%);
   backdrop-filter: blur(10px);
   border-bottom: 1px solid var(--border);
   padding: 1.5rem 2rem;
@@ -32,7 +32,7 @@
 }
 
 .back-btn-upload {
-  background: rgba(99, 102, 241, 0.1);
+  background: rgba(114, 152, 199, 0.1);
   border: 1px solid var(--border);
   color: var(--text-primary);
   padding: 0.5rem 1rem;
@@ -43,7 +43,7 @@
 }
 
 .back-btn-upload:hover {
-  background: rgba(99, 102, 241, 0.2);
+  background: rgba(114, 152, 199, 0.2);
   border-color: var(--accent);
   transform: translateX(-4px);
 }
@@ -96,7 +96,7 @@
 
 .guide-card:hover {
   border-color: var(--accent);
-  box-shadow: 0 10px 25px rgba(6, 182, 212, 0.1);
+  box-shadow: 0 10px 25px rgba(114, 152, 199, 0.1);
 }
 
 .guide-icon {
@@ -120,8 +120,8 @@
 }
 
 .guide-tips {
-  background: rgba(99, 102, 241, 0.1);
-  border: 1px solid rgba(99, 102, 241, 0.3);
+  background: rgba(114, 152, 199, 0.1);
+  border: 1px solid rgba(114, 152, 199, 0.3);
   border-radius: 8px;
   padding: 1.5rem;
 }
@@ -183,12 +183,12 @@
 
 .drag-drop-area:hover {
   border-color: var(--accent);
-  background: rgba(6, 182, 212, 0.05);
+  background: rgba(114, 152, 199, 0.05);
 }
 
 .drag-drop-area.active {
   border-color: var(--accent);
-  background: rgba(6, 182, 212, 0.1);
+  background: rgba(114, 152, 199, 0.1);
   transform: scale(1.02);
 }
 
@@ -255,7 +255,7 @@
 }
 
 .upload-change-btn {
-  background: rgba(99, 102, 241, 0.2);
+  background: rgba(114, 152, 199, 0.2);
   border: 1px solid var(--accent);
   color: var(--accent);
   padding: 0.5rem 1.5rem;
@@ -266,7 +266,7 @@
 }
 
 .upload-change-btn:hover {
-  background: rgba(99, 102, 241, 0.3);
+  background: rgba(114, 152, 199, 0.3);
 }
 
 /* ============== PROGRESS BAR ============== */
@@ -295,7 +295,7 @@
 
 .progress-fill {
   height: 100%;
-  background: linear-gradient(90deg, #6366f1 0%, #06b6d4 100%);
+  background: linear-gradient(90deg, #8CAFDA 0%, #7298C7 100%);
   transition: width 0.3s ease;
   border-radius: 4px;
 }
@@ -345,7 +345,7 @@
 .form-textarea:focus {
   outline: none;
   border-color: var(--accent);
-  box-shadow: 0 0 20px rgba(6, 182, 212, 0.2);
+  box-shadow: 0 0 20px rgba(114, 152, 199, 0.2);
 }
 
 .form-select {
@@ -390,9 +390,9 @@
 }
 
 .remove-btn {
-  background: rgba(239, 68, 68, 0.2);
-  border: 1px solid rgba(239, 68, 68, 0.5);
-  color: #fca5a5;
+  background: rgba(178, 34, 52, 0.2);
+  border: 1px solid rgba(178, 34, 52, 0.5);
+  color: #E38FA0;
   width: 40px;
   height: 40px;
   border-radius: 6px;
@@ -405,7 +405,7 @@
 }
 
 .remove-btn:hover {
-  background: rgba(239, 68, 68, 0.3);
+  background: rgba(178, 34, 52, 0.3);
 }
 
 .add-btn {
@@ -439,21 +439,21 @@
 
 .thumbnail-btn:hover {
   border-color: var(--accent);
-  background: rgba(6, 182, 212, 0.05);
+  background: rgba(114, 152, 199, 0.05);
 }
 
 /* ============== SUBMIT SECTION ============== */
 .submit-section {
   text-align: center;
   padding: 2rem;
-  background: rgba(99, 102, 241, 0.1);
-  border: 1px solid rgba(99, 102, 241, 0.3);
+  background: rgba(114, 152, 199, 0.1);
+  border: 1px solid rgba(114, 152, 199, 0.3);
   border-radius: 12px;
   margin-top: 1rem;
 }
 
 .submit-btn {
-  background: linear-gradient(135deg, #6366f1 0%, #06b6d4 100%);
+  background: linear-gradient(135deg, #8CAFDA 0%, #7298C7 100%);
   color: white;
   border: none;
   padding: 1.25rem 3rem;
@@ -462,14 +462,14 @@
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
-  box-shadow: 0 10px 30px rgba(99, 102, 241, 0.3);
+  box-shadow: 0 10px 30px rgba(114, 152, 199, 0.3);
   width: 100%;
   max-width: 400px;
 }
 
 .submit-btn:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: 0 15px 40px rgba(99, 102, 241, 0.4);
+  box-shadow: 0 15px 40px rgba(114, 152, 199, 0.4);
 }
 
 .submit-btn:active:not(:disabled) {
@@ -570,10 +570,10 @@
   gap: 0.75rem;
   margin-top: 1rem;
   padding: 1rem;
-  background: rgba(239, 68, 68, 0.1);
-  border: 1px solid rgba(239, 68, 68, 0.3);
+  background: rgba(178, 34, 52, 0.1);
+  border: 1px solid rgba(178, 34, 52, 0.3);
   border-radius: 8px;
-  color: #fca5a5;
+  color: #E38FA0;
   font-size: 0.95rem;
   animation: slideInDown 0.3s ease-out;
 }
@@ -630,10 +630,10 @@
 
 .progress-fill {
   height: 100%;
-  background: linear-gradient(90deg, #ef4444 0%, #f97316 50%, #10b981 100%);
+  background: linear-gradient(90deg, #B22234 0%, #FF7F50 50%, #A8D3A8 100%);
   transition: width 0.3s ease;
   border-radius: 12px;
-  box-shadow: 0 0 20px rgba(239, 68, 68, 0.4);
+  box-shadow: 0 0 20px rgba(178, 34, 52, 0.4);
 }
 
 .progress-detail {
@@ -702,8 +702,8 @@
 }
 
 .video-info {
-  background: rgba(99, 102, 241, 0.05);
-  border: 1px solid rgba(99, 102, 241, 0.2);
+  background: rgba(114, 152, 199, 0.05);
+  border: 1px solid rgba(114, 152, 199, 0.2);
   border-radius: 8px;
   padding: 1.5rem;
   font-size: 0.95rem;
@@ -742,7 +742,7 @@
 }
 
 .success-btn-primary {
-  background: linear-gradient(135deg, #10b981 0%, #06b6d4 100%);
+  background: linear-gradient(135deg, #A8D3A8 0%, #7298C7 100%);
   color: white;
   box-shadow: 0 10px 30px rgba(16, 185, 129, 0.3);
 }
@@ -753,13 +753,13 @@
 }
 
 .success-btn-secondary {
-  background: rgba(99, 102, 241, 0.1);
+  background: rgba(114, 152, 199, 0.1);
   color: var(--accent);
   border: 1px solid var(--accent);
 }
 
 .success-btn-secondary:hover {
-  background: rgba(99, 102, 241, 0.2);
+  background: rgba(114, 152, 199, 0.2);
   transform: translateY(-2px);
 }
 

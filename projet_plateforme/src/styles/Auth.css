@@ -3,7 +3,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #0f172a 0%, #1a1f3a 100%);
+  background: linear-gradient(135deg, #10141A 0%, #171D28 100%);
   padding: 1rem;
 }
 
@@ -25,7 +25,7 @@
 .auth-header h1 {
   font-size: 2rem;
   font-weight: 700;
-  background: linear-gradient(135deg, #6366f1 0%, #06b6d4 100%);
+  background: linear-gradient(135deg, #7298C7 0%, #F3D98F 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -72,13 +72,13 @@
 .form-input:focus {
   outline: none;
   border-color: var(--accent);
-  box-shadow: 0 0 20px rgba(6, 182, 212, 0.2);
+  box-shadow: 0 0 20px rgba(114, 152, 199, 0.2);
 }
 
 .error-message {
-  background: rgba(239, 68, 68, 0.1);
-  border: 1px solid rgba(239, 68, 68, 0.3);
-  color: #fca5a5;
+  background: rgba(178, 34, 52, 0.1);
+  border: 1px solid rgba(178, 34, 52, 0.3);
+  color: #E38FA0;
   padding: 0.75rem 1rem;
   border-radius: 8px;
   font-size: 0.9rem;
@@ -86,7 +86,7 @@
 
 .auth-button {
   padding: 1rem 1.5rem;
-  background: linear-gradient(135deg, #6366f1 0%, #06b6d4 100%);
+  background: linear-gradient(135deg, #8CAFDA 0%, #7298C7 100%);
   color: white;
   border: none;
   border-radius: 8px;
@@ -94,12 +94,12 @@
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
-  box-shadow: 0 10px 30px rgba(99, 102, 241, 0.3);
+  box-shadow: 0 10px 30px rgba(114, 152, 199, 0.3);
 }
 
 .auth-button:hover {
   transform: translateY(-2px);
-  box-shadow: 0 15px 40px rgba(99, 102, 241, 0.4);
+  box-shadow: 0 15px 40px rgba(114, 152, 199, 0.4);
 }
 
 .auth-button:active {
@@ -120,12 +120,12 @@
 }
 
 .auth-footer a:hover {
-  color: #22d3ee;
+  color: #7298C7;
 }
 
 .email-info {
-  background: rgba(99, 102, 241, 0.1);
-  border-left: 3px solid #6366f1;
+  background: rgba(114, 152, 199, 0.1);
+  border-left: 3px solid #7298C7;
   padding: 1rem;
   border-radius: 6px;
   font-size: 0.9rem;
@@ -170,7 +170,7 @@
 }
 
 .resend-btn:hover:not(:disabled) {
-  background: rgba(6, 182, 212, 0.1);
+  background: rgba(114, 152, 199, 0.1);
 }
 
 .resend-btn:disabled {
@@ -182,12 +182,12 @@
   text-align: center;
   padding: 2rem;
   background: rgba(34, 197, 94, 0.1);
-  border: 1px solid #22c55e;
+  border: 1px solid #A8D3A8;
   border-radius: 8px;
 }
 
 .success-message p {
-  color: #22c55e;
+  color: #A8D3A8;
   font-size: 1.1rem;
   font-weight: 500;
   margin: 0.5rem 0;
