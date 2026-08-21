@@ -122,7 +122,7 @@
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #8CAFDA 0%, #7298C7 100%);
+  background: linear-gradient(135deg, #6366f1 0%, #06b6d4 100%);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -155,7 +155,7 @@
 }
 
 .search-result-item:hover {
-  background: rgba(114, 152, 199, 0.1);
+  background: rgba(99, 102, 241, 0.1);
 }
 
 .search-result-thumb {
