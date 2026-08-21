@@ -26,6 +26,7 @@ const PORT = process.env.PORT || 5000
 app.use(cors())
 app.use(express.json())
 app.use('/uploads/avatars', express.static(path.join(__dirname, '../uploads/avatars')))
+app.use('/uploads/thumbnails', express.static(path.join(__dirname, '../uploads/thumbnails')))
 
 app.get('/api/health', (_req, res) => {
   res.json({ status: 'ok', message: 'Server is running' })

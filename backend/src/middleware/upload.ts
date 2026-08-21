@@ -8,9 +8,14 @@ if (!fs.existsSync(uploadDir)) {
   fs.mkdirSync(uploadDir, { recursive: true })
 }
 
+const thumbnailDir = path.join(uploadDir, 'thumbnails')
+if (!fs.existsSync(thumbnailDir)) {
+  fs.mkdirSync(thumbnailDir, { recursive: true })
+}
+
 const storage = multer.diskStorage({
-  destination: (_req, _file, cb) => {
-    cb(null, uploadDir)
+  destination: (_req, file, cb) => {
+    cb(null, file.fieldname === 'thumbnail' ? thumbnailDir : uploadDir)
   },
   filename: (_req, file, cb) => {
     const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9)
@@ -21,7 +26,16 @@ const storage = multer.diskStorage({
 })
 
 const fileFilter = (_req: any, file: any, cb: any) => {
-  const allowedMimes = ['video/mp4', 'video/webm', 'video/quicktime']
+  if (file.fieldname === 'thumbnail') {
+    const allowedImageMimes = ['image/jpeg', 'image/png', 'image/webp']
+    if (allowedImageMimes.includes(file.mimetype)) {
+      cb(null, true)
+    } else {
+      cb(new Error('Only JPG, PNG or WEBP images are allowed for the thumbnail'))
+    }
+    return
+  }
+  const allowedMimes = ['video/mp4', 'video/quicktime']
   if (allowedMimes.includes(file.mimetype)) {
     cb(null, true)
   } else {
@@ -32,5 +46,5 @@ const fileFilter = (_req: any, file: any, cb: any) => {
 export const uploadVideo = multer({
   storage,
   fileFilter,
-  limits: { fileSize: 500 * 1024 * 1024 }
+  limits: { fileSize: 2 * 1024 * 1024 * 1024 }
 })
