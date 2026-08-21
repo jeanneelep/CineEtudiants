@@ -23,6 +23,12 @@ export default function AdminDashboard({ user, token, onLogout, onBack }) {
     thumbnail: ''
   })
   const [openMenuId, setOpenMenuId] = useState(null)
+  const [previewVideo, setPreviewVideo] = useState(null)
+
+  const getVideoUrl = (url) => {
+    if (!url) return ''
+    return url.startsWith('http') ? url : `http://localhost:5000${url}`
+  }
 
   useEffect(() => {
     loadDashboardData()
@@ -44,7 +50,12 @@ export default function AdminDashboard({ user, token, onLogout, onBack }) {
       setStats(statsData)
 
       const videosData = await api.getAdminVideos(token)
-      setVideos(Array.isArray(videosData) ? videosData : [])
+      const sortedVideos = (Array.isArray(videosData) ? videosData : []).sort((a, b) => {
+        if (a.status === 'pending' && b.status !== 'pending') return -1
+        if (a.status !== 'pending' && b.status === 'pending') return 1
+        return new Date(b.updatedAt) - new Date(a.updatedAt)
+      })
+      setVideos(sortedVideos)
 
       const commentsData = await api.getAdminComments(token)
       setComments(Array.isArray(commentsData) ? commentsData : [])
@@ -307,6 +318,14 @@ export default function AdminDashboard({ user, token, onLogout, onBack }) {
                     <h4>{video.title}</h4>
                     <span className={`status-badge ${video.status}`}>{video.status}</span>
                   </div>
+                  <div className="moderation-preview" onClick={() => setPreviewVideo(video)}>
+                    <img
+                      src={video.thumbnail ? getVideoUrl(video.thumbnail) : 'https://via.placeholder.com/160x90?text=No+Image'}
+                      alt={video.title}
+                      className="moderation-thumbnail"
+                    />
+                    <span className="moderation-preview-play">▶ Aperçu</span>
+                  </div>
                   <div className="item-details">
                     <p><strong>Auteur:</strong> {video.creator?.name} ({video.creator?.email})</p>
                     <p><strong>Catégorie:</strong> {video.category}</p>
@@ -535,6 +554,48 @@ export default function AdminDashboard({ user, token, onLogout, onBack }) {
                 Supprimer
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {previewVideo && (
+        <div className="modal-overlay" onClick={() => setPreviewVideo(null)}>
+          <div className="modal-content preview-modal" onClick={(e) => e.stopPropagation()}>
+            <button className="modal-close" onClick={() => setPreviewVideo(null)}>✕</button>
+            <video
+              src={getVideoUrl(previewVideo.url)}
+              controls
+              autoPlay
+              className="preview-video-player"
+            />
+            <div className="preview-video-info">
+              <h3>{previewVideo.title}</h3>
+              <p><strong>Auteur:</strong> {previewVideo.creator?.name} ({previewVideo.creator?.email})</p>
+              <p><strong>Catégorie:</strong> {previewVideo.category} • <strong>Durée:</strong> {previewVideo.duration}s</p>
+              {previewVideo.description && <p>{previewVideo.description}</p>}
+            </div>
+            {previewVideo.status === 'pending' && (
+              <div className="modal-actions">
+                <button
+                  className="btn-reject"
+                  onClick={() => {
+                    handleRejectVideoClick(previewVideo.id)
+                    setPreviewVideo(null)
+                  }}
+                >
+                  Rejeter
+                </button>
+                <button
+                  className="btn-approve"
+                  onClick={() => {
+                    handleApproveVideo(previewVideo.id)
+                    setPreviewVideo(null)
+                  }}
+                >
+                  Approuver
+                </button>
+              </div>
+            )}
           </div>
         </div>
       )}
