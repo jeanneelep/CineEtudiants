@@ -20,3 +20,19 @@ export const authMiddleware = (req: AuthRequest, res: Response, next: NextFuncti
     res.status(401).json({ error: 'Invalid token' })
   }
 }
+
+export const optionalAuthMiddleware = (req: AuthRequest, _res: Response, next: NextFunction) => {
+  const token = req.headers.authorization?.split(' ')[1]
+
+  if (!token) {
+    return next()
+  }
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET as string) as { id: string }
+    req.userId = decoded.id
+  } catch (error) {
+    // Token invalide ou expiré : on continue simplement sans utilisateur identifié
+  }
+  next()
+}

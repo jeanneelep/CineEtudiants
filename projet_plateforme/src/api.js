@@ -169,8 +169,10 @@ export const api = {
   },
 
   // Likes
-  getVideoLikes: async (videoId) => {
-    const res = await fetch(`${API_URL}/videos/${videoId}/likes`)
+  getVideoLikes: async (videoId, token) => {
+    const res = await fetch(`${API_URL}/videos/${videoId}/likes`, {
+      headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+    })
     return res.json()
   },
 
@@ -216,6 +218,17 @@ export const api = {
 
   getUserVideos: async (userId) => {
     const res = await fetch(`${API_URL}/users/${userId}/videos`)
+    return res.json()
+  },
+
+  getReceivedLikes: async (token, userId) => {
+    const res = await fetch(`${API_URL}/users/${userId}/received-likes`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    })
+    if (!res.ok) {
+      const data = await res.json()
+      throw new Error(data.error || 'Erreur chargement des likes reçus')
+    }
     return res.json()
   },
 

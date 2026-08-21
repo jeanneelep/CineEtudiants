@@ -29,6 +29,29 @@ export const getVideoLikes = async (req: AuthRequest, res: Response) => {
   }
 }
 
+export const getReceivedLikes = async (req: AuthRequest, res: Response) => {
+  try {
+    const userIdParam = req.params.id as string
+
+    if (req.userId !== userIdParam) {
+      return res.status(403).json({ error: 'Not authorized' })
+    }
+
+    const likes = await prisma.like.findMany({
+      where: { video: { creatorId: userIdParam } },
+      include: {
+        user: { select: { id: true, name: true } },
+        video: { select: { id: true, title: true } }
+      },
+      orderBy: { createdAt: 'desc' }
+    })
+
+    res.json(likes)
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to fetch received likes' })
+  }
+}
+
 export const toggleLike = async (req: AuthRequest, res: Response) => {
   try {
     const { id: videoId } = req.params as { id: string }

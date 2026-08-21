@@ -80,7 +80,7 @@ export default function Explore({ onNavigate, user, token, onProfileClick, onLog
 
   const loadVideoDetails = async () => {
     try {
-      const likes = await api.getVideoLikes(selectedVideo.id)
+      const likes = await api.getVideoLikes(selectedVideo.id, token)
       const comments = await api.getVideoComments(selectedVideo.id)
       setVideoLikes(likes)
       setVideoComments(Array.isArray(comments) ? comments : [])
