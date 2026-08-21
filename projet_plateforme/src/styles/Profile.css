@@ -398,6 +398,55 @@
   margin-top: 1.5rem;
 }
 
+.videos-subtabs {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.subtab-btn {
+  background: none;
+  border: 1px solid #334155;
+  color: #cbd5e1;
+  padding: 0.45rem 1rem;
+  font-size: 0.85rem;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.subtab-btn:hover {
+  border-color: #fbbf24;
+  color: #e2e8f0;
+}
+
+.subtab-btn.active {
+  background: #fbbf24;
+  border-color: #fbbf24;
+  color: #0f172a;
+  font-weight: 600;
+}
+
+.received-likes-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.received-like-item {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  margin: 0;
+  color: #cbd5e1;
+  font-size: 0.9rem;
+}
+
+.received-like-item strong {
+  color: #f1f5f9;
+}
+
 .favorites-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
@@ -686,6 +735,20 @@
   margin-top: 0.5rem;
 }
 
+.likers-list {
+  margin: 0.6rem 0 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.likers-list p {
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+  font-style: italic;
+  margin: 0;
+}
+
 .modal-large {
   max-height: 90vh;
   overflow-y: auto;
@@ -707,42 +770,57 @@
 
 .like-btn {
   background: none;
-  border: 2px solid var(--accent);
-  color: var(--accent);
+  border: 2px solid var(--border);
+  color: var(--text-secondary);
   padding: 0.5rem 1rem;
   border-radius: 6px;
   cursor: pointer;
   font-size: 0.95rem;
   font-weight: 500;
   transition: all 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 72px;
+  box-sizing: border-box;
 }
 
 .like-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
   background: rgba(6, 182, 212, 0.1);
 }
 
 .like-btn.liked {
-  background: var(--accent);
-  color: white;
+  background: rgba(6, 182, 212, 0.12);
+  border-color: var(--accent);
+  color: var(--accent);
 }
 
 .favorite-btn {
   background: none;
-  border: none;
+  border: 2px solid var(--border);
   color: #fbbf24;
-  font-size: 1.2rem;
+  font-size: 0.95rem;
+  font-weight: 500;
   cursor: pointer;
   padding: 0.5rem 1rem;
-  transition: all 0.2s ease;
-  border-radius: 0.5rem;
+  transition: all 0.3s ease;
+  border-radius: 6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 72px;
+  box-sizing: border-box;
 }
 
 .favorite-btn:hover {
+  border-color: #fbbf24;
   background-color: rgba(251, 191, 36, 0.1);
-  transform: scale(1.1);
 }
 
 .favorite-btn.favorited {
+  border-color: #fbbf24;
   color: #fbbf24;
   text-shadow: 0 0 10px rgba(251, 191, 36, 0.5);
 }

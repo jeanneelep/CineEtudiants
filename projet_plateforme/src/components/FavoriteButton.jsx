@@ -44,7 +44,7 @@ export default function FavoriteButton({ videoId, user, token, isFavorite: initi
       disabled={loading}
       title={isFavorite ? 'Retirer des favoris' : 'Ajouter aux favoris'}
     >
-      {isFavorite ? '⭐' : '☆'} {count}
+      {isFavorite ? '⭐' : '☆'}
     </button>
   )
 }

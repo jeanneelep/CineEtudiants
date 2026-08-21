@@ -12,6 +12,10 @@ export default function Profile({ user, token, onBack, onUploadClick, onLogout, 
   const [myVideos, setMyVideos] = useState([])
   const [myVideosLoading, setMyVideosLoading] = useState(false)
   const [activeTab, setActiveTab] = useState('profile') // 'profile' | 'favorites' | 'videos'
+  const [videosSubTab, setVideosSubTab] = useState('films') // 'films' | 'likes'
+  const [receivedLikes, setReceivedLikes] = useState([])
+  const [receivedLikesLoading, setReceivedLikesLoading] = useState(false)
+  const [receivedLikesLoaded, setReceivedLikesLoaded] = useState(false)
   const [playingVideo, setPlayingVideo] = useState(null)
   const [avatarSaving, setAvatarSaving] = useState(false)
   const avatarInputRef = useRef(null)
@@ -63,7 +67,7 @@ export default function Profile({ user, token, onBack, onUploadClick, onLogout, 
 
   const loadVideoDetails = async () => {
     try {
-      const likes = await api.getVideoLikes(playingVideo.id)
+      const likes = await api.getVideoLikes(playingVideo.id, token)
       const comments = await api.getVideoComments(playingVideo.id)
       setVideoLikes(likes)
       setVideoComments(Array.isArray(comments) ? comments : [])
@@ -278,6 +282,27 @@ export default function Profile({ user, token, onBack, onUploadClick, onLogout, 
       setMyVideos([])
     } finally {
       setMyVideosLoading(false)
+    }
+  }
+
+  const loadReceivedLikes = async () => {
+    setReceivedLikesLoading(true)
+    try {
+      const data = await api.getReceivedLikes(token, user.id)
+      setReceivedLikes(Array.isArray(data) ? data : [])
+    } catch (err) {
+      console.error('Erreur chargement des likes reçus:', err)
+      setReceivedLikes([])
+    } finally {
+      setReceivedLikesLoading(false)
+      setReceivedLikesLoaded(true)
+    }
+  }
+
+  const handleVideosSubTabClick = (tab) => {
+    setVideosSubTab(tab)
+    if (tab === 'likes' && !receivedLikesLoaded) {
+      loadReceivedLikes()
     }
   }
 
@@ -505,12 +530,15 @@ export default function Profile({ user, token, onBack, onUploadClick, onLogout, 
                   <div className="stats-grid">
                     <button className="stat-card stat-card-clickable" onClick={() => setActiveTab('videos')}>
                       <div className="stat-number">{profile?.stats?.videoCount || 0}</div>
-                      <div className="stat-label">Films uploadés</div>
+                      <div className="stat-label">Films</div>
                     </button>
-                    <div className="stat-card">
+                    <button
+                      className="stat-card stat-card-clickable"
+                      onClick={() => { setActiveTab('videos'); handleVideosSubTabClick('likes') }}
+                    >
                       <div className="stat-number">{profile?.stats?.likesReceived || 0}</div>
-                      <div className="stat-label">Likes reçus</div>
-                    </div>
+                      <div className="stat-label">Likes</div>
+                    </button>
                     <button className="stat-card stat-card-clickable" onClick={() => setActiveTab('favorites')}>
                       <div className="stat-number">{favorites.length}</div>
                       <div className="stat-label">Favoris</div>
@@ -544,7 +572,23 @@ export default function Profile({ user, token, onBack, onUploadClick, onLogout, 
           {/* My Videos Tab */}
           {activeTab === 'videos' && (
             <div className="favorites-section">
-              {myVideosLoading ? (
+              <div className="videos-subtabs">
+                <button
+                  className={`subtab-btn ${videosSubTab === 'films' ? 'active' : ''}`}
+                  onClick={() => handleVideosSubTabClick('films')}
+                >
+                  Mes films
+                </button>
+                <button
+                  className={`subtab-btn ${videosSubTab === 'likes' ? 'active' : ''}`}
+                  onClick={() => handleVideosSubTabClick('likes')}
+                >
+                  Mes likes
+                </button>
+              </div>
+
+              {videosSubTab === 'films' && (
+              myVideosLoading ? (
                 <div style={{padding: '2rem', textAlign: 'center', color: '#cbd5e1'}}>Chargement de vos films...</div>
               ) : myVideos.length === 0 ? (
                 <div style={{padding: '2rem', textAlign: 'center', color: '#cbd5e1'}}>
@@ -656,6 +700,25 @@ export default function Profile({ user, token, onBack, onUploadClick, onLogout, 
                       )}
                     </div>
                   ))}
+                </div>
+              )
+              )}
+
+              {videosSubTab === 'likes' && (
+                <div className="received-likes-list">
+                  {receivedLikesLoading ? (
+                    <div style={{padding: '2rem', textAlign: 'center', color: '#cbd5e1'}}>Chargement de vos likes...</div>
+                  ) : receivedLikes.length === 0 ? (
+                    <div style={{padding: '2rem', textAlign: 'center', color: '#cbd5e1'}}>
+                      <p>Personne n'a encore aimé un de vos films</p>
+                    </div>
+                  ) : (
+                    receivedLikes.map(like => (
+                      <p key={like.id} className="received-like-item">
+                        <strong>{like.user.name}</strong> a aimé votre film « {like.video.title} »
+                      </p>
+                    ))
+                  )}
                 </div>
               )}
             </div>
