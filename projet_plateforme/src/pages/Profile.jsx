@@ -31,6 +31,12 @@ export default function Profile({ user, token, onBack, onUploadClick, onLogout, 
   const [editingReplyId, setEditingReplyId] = useState(null)
   const [editReplyContent, setEditReplyContent] = useState('')
   const [openReplyMenuId, setOpenReplyMenuId] = useState(null)
+  const [editingVideoId, setEditingVideoId] = useState(null)
+  const [editVideoTitle, setEditVideoTitle] = useState('')
+  const [editVideoDescription, setEditVideoDescription] = useState('')
+  const [editVideoFile, setEditVideoFile] = useState(null)
+  const [editVideoThumbnail, setEditVideoThumbnail] = useState(null)
+  const [editVideoLoading, setEditVideoLoading] = useState(false)
 
   useEffect(() => {
     if (user?.id) {
@@ -275,6 +281,52 @@ export default function Profile({ user, token, onBack, onUploadClick, onLogout, 
     }
   }
 
+  const handleDeleteVideo = async (videoId) => {
+    if (!window.confirm('Êtes-vous sûr de vouloir supprimer ce film ? Cette action est irréversible.')) return
+    try {
+      await api.deleteMyVideo(token, videoId)
+      setMyVideos(prev => prev.filter(v => v.id !== videoId))
+    } catch (err) {
+      alert(err.message || 'Erreur lors de la suppression')
+    }
+  }
+
+  const handleStartEditVideo = (video) => {
+    setEditingVideoId(video.id)
+    setEditVideoTitle(video.title)
+    setEditVideoDescription(video.description || '')
+    setEditVideoFile(null)
+    setEditVideoThumbnail(null)
+  }
+
+  const handleCancelEditVideo = () => {
+    setEditingVideoId(null)
+    setEditVideoTitle('')
+    setEditVideoDescription('')
+    setEditVideoFile(null)
+    setEditVideoThumbnail(null)
+  }
+
+  const handleSaveEditVideo = async (videoId) => {
+    if (!editVideoTitle.trim()) return
+    if (editVideoFile && !window.confirm('Remplacer le fichier vidéo renverra ce film en attente de modération. Continuer ?')) return
+    setEditVideoLoading(true)
+    try {
+      const updated = await api.updateMyVideo(token, videoId, {
+        title: editVideoTitle.trim(),
+        description: editVideoDescription.trim(),
+        videoFile: editVideoFile,
+        thumbnailFile: editVideoThumbnail
+      })
+      setMyVideos(prev => prev.map(v => v.id === videoId ? { ...v, ...updated } : v))
+      handleCancelEditVideo()
+    } catch (err) {
+      alert(err.message || 'Erreur lors de la modification')
+    } finally {
+      setEditVideoLoading(false)
+    }
+  }
+
   const loadProfile = async () => {
     try {
       const data = await api.getUserProfile(token, user.id)
@@ -504,11 +556,11 @@ export default function Profile({ user, token, onBack, onUploadClick, onLogout, 
                     <div
                       key={video.id}
                       className="favorite-card"
-                      onClick={() => setPlayingVideo(video)}
+                      onClick={() => editingVideoId !== video.id && setPlayingVideo(video)}
                     >
                       <div className="favorite-thumbnail">
                         <img
-                          src={video.thumbnail || 'https://via.placeholder.com/300x200?text=No+Image'}
+                          src={video.thumbnail ? getVideoUrl(video.thumbnail) : 'https://via.placeholder.com/300x200?text=No+Image'}
                           alt={video.title}
                           style={{width: '100%', height: '100%', objectFit: 'cover'}}
                         />
@@ -518,11 +570,90 @@ export default function Profile({ user, token, onBack, onUploadClick, onLogout, 
                         <span className={`video-status-badge status-${video.status}`}>
                           {video.status === 'approved' ? 'Publié' : video.status === 'pending' ? 'En attente' : 'Rejeté'}
                         </span>
+                        <div className="kebab-menu-container" onClick={(e) => e.stopPropagation()}>
+                          <button
+                            className="kebab-button"
+                            onClick={() => setOpenMenuId(openMenuId === video.id ? null : video.id)}
+                            title="Options"
+                          >
+                            •••
+                          </button>
+                          {openMenuId === video.id && (
+                            <div className="kebab-menu">
+                              <button
+                                className="kebab-item"
+                                onClick={() => { handleStartEditVideo(video); setOpenMenuId(null) }}
+                              >
+                                Modifier
+                              </button>
+                              <button
+                                className="kebab-item kebab-delete"
+                                onClick={() => { handleDeleteVideo(video.id); setOpenMenuId(null) }}
+                              >
+                                Supprimer
+                              </button>
+                            </div>
+                          )}
+                        </div>
                       </div>
-                      <div className="favorite-info">
-                        <h4>{video.title}</h4>
-                        <p className="favorite-meta">{video.category} • {formatDuration(video.duration)}</p>
-                      </div>
+                      {editingVideoId === video.id ? (
+                        <div className="comment-edit-form" onClick={(e) => e.stopPropagation()}>
+                          <input
+                            type="text"
+                            value={editVideoTitle}
+                            onChange={(e) => setEditVideoTitle(e.target.value)}
+                            className="edit-input"
+                            placeholder="Titre"
+                          />
+                          <textarea
+                            value={editVideoDescription}
+                            onChange={(e) => setEditVideoDescription(e.target.value)}
+                            className="edit-input"
+                            placeholder="Description"
+                          />
+                          <label className="form-hint" style={{display: 'block', marginBottom: '0.3rem'}}>
+                            Remplacer le fichier vidéo (optionnel — repasse le film en attente de modération)
+                          </label>
+                          <input
+                            type="file"
+                            accept="video/*,.mp4,.mov"
+                            onChange={(e) => setEditVideoFile(e.target.files[0] || null)}
+                            className="edit-input"
+                          />
+                          {editVideoFile && (
+                            <p className="form-hint">Nouveau fichier : {editVideoFile.name}</p>
+                          )}
+                          <label className="form-hint" style={{display: 'block', marginTop: '0.6rem', marginBottom: '0.3rem'}}>
+                            Remplacer la vignette (optionnel)
+                          </label>
+                          <input
+                            type="file"
+                            accept="image/jpeg,image/png,image/webp"
+                            onChange={(e) => setEditVideoThumbnail(e.target.files[0] || null)}
+                            className="edit-input"
+                          />
+                          {editVideoThumbnail && (
+                            <p className="form-hint">Nouvelle vignette : {editVideoThumbnail.name}</p>
+                          )}
+                          <div className="edit-buttons">
+                            <button
+                              onClick={() => handleSaveEditVideo(video.id)}
+                              disabled={editVideoLoading || !editVideoTitle.trim()}
+                              className="edit-save-btn"
+                            >
+                              {editVideoLoading ? 'Sauvegarde...' : 'Sauvegarder'}
+                            </button>
+                            <button onClick={handleCancelEditVideo} className="edit-cancel-btn">
+                              Annuler
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="favorite-info">
+                          <h4>{video.title}</h4>
+                          <p className="favorite-meta">{video.category} • {formatDuration(video.duration)}</p>
+                        </div>
+                      )}
                     </div>
                   ))}
                 </div>
@@ -545,7 +676,7 @@ export default function Profile({ user, token, onBack, onUploadClick, onLogout, 
                     <div key={video.id} className="favorite-card" onClick={() => setPlayingVideo(video)}>
                       <div className="favorite-thumbnail">
                         <img
-                          src={video.thumbnail || 'https://via.placeholder.com/300x200?text=No+Image'}
+                          src={video.thumbnail ? getVideoUrl(video.thumbnail) : 'https://via.placeholder.com/300x200?text=No+Image'}
                           alt={video.title}
                           style={{width: '100%', height: '100%', objectFit: 'cover'}}
                         />

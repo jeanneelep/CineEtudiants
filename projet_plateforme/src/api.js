@@ -107,6 +107,38 @@ export const api = {
     return res.json()
   },
 
+  updateMyVideo: async (token, videoId, videoData) => {
+    const formData = new FormData()
+    if (videoData.title !== undefined) formData.append('title', videoData.title)
+    if (videoData.description !== undefined) formData.append('description', videoData.description)
+    if (videoData.category !== undefined) formData.append('category', videoData.category)
+    if (videoData.videoFile) formData.append('videoFile', videoData.videoFile)
+    if (videoData.thumbnailFile) formData.append('thumbnail', videoData.thumbnailFile)
+
+    const res = await fetch(`${API_URL}/videos/${videoId}`, {
+      method: 'PUT',
+      headers: { 'Authorization': `Bearer ${token}` },
+      body: formData
+    })
+    if (!res.ok) {
+      const data = await res.json()
+      throw new Error(data.error || 'Erreur modification vidéo')
+    }
+    return res.json()
+  },
+
+  deleteMyVideo: async (token, videoId) => {
+    const res = await fetch(`${API_URL}/videos/${videoId}`, {
+      method: 'DELETE',
+      headers: { 'Authorization': `Bearer ${token}` }
+    })
+    if (!res.ok) {
+      const data = await res.json()
+      throw new Error(data.error || 'Erreur suppression vidéo')
+    }
+    return res.json()
+  },
+
   deleteComment: async (token, commentId) => {
     const res = await fetch(`${API_URL}/videos/comment/${commentId}`, {
       method: 'DELETE',
