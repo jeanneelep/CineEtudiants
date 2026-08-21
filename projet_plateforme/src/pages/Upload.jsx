@@ -8,9 +8,10 @@ const GENRES = [
   'Science-fiction', 'Fantasy', 'Aventure', 'Historique', 'Autre'
 ]
 
-const VALID_VIDEO_TYPES = ['video/mp4', 'video/webm', 'video/quicktime', 'video/x-msvideo']
-const VALID_VIDEO_EXTENSIONS = ['.mp4', '.webm', '.mov', '.avi']
-const MAX_FILE_SIZE = 500 * 1024 * 1024 // 500MB
+const VALID_VIDEO_TYPES = ['video/mp4', 'video/quicktime']
+const VALID_VIDEO_EXTENSIONS = ['.mp4', '.mov']
+const MAX_FILE_SIZE = 2 * 1024 * 1024 * 1024 // 2 Go
+const MAX_DURATION_MINUTES = 45
 
 export default function Upload({ user, token, onBack, onUpload }) {
   const [videoFile, setVideoFile] = useState(null)
@@ -21,6 +22,11 @@ export default function Upload({ user, token, onBack, onUpload }) {
   const [uploadSuccess, setUploadSuccess] = useState(false)
   const [uploadedVideo, setUploadedVideo] = useState(null)
   const [validationError, setValidationError] = useState('')
+
+  const getVideoUrl = (url) => {
+    if (url.startsWith('http')) return url
+    return `http://localhost:5000${url}`
+  }
   const [coAuthors, setCoAuthors] = useState([''])
   const [formData, setFormData] = useState({
     title: '',
@@ -49,15 +55,14 @@ export default function Upload({ user, token, onBack, onUpload }) {
     const fileName = file.name.toLowerCase()
     const hasValidExt = VALID_VIDEO_EXTENSIONS.some(ext => fileName.endsWith(ext))
     if (!hasValidExt) {
-      setValidationError(`Format non supporté. Formats acceptés: ${VALID_VIDEO_EXTENSIONS.join(', ')}`)
+      setValidationError(`Format non supporté. Formats acceptés: ${VALID_VIDEO_EXTENSIONS.join(', ')} (vidéo H.264, audio AAC)`)
       return false
     }
 
-    // Check file size (max 500MB)
+    // Check file size (max 2 Go)
     if (file.size > MAX_FILE_SIZE) {
-      const sizeMB = (file.size / 1024 / 1024).toFixed(1)
-      const maxMB = (MAX_FILE_SIZE / 1024 / 1024).toFixed(0)
-      setValidationError(`Fichier trop volumineux (${sizeMB}MB). Maximum autorisé: ${maxMB}MB`)
+      const sizeGo = (file.size / 1024 / 1024 / 1024).toFixed(2)
+      setValidationError(`Fichier trop volumineux (${sizeGo} Go). Maximum autorisé : 2 Go`)
       return false
     }
 
@@ -161,6 +166,10 @@ export default function Upload({ user, token, onBack, onUpload }) {
       setValidationError('Entrez un titre')
       return
     }
+    if (formData.duration && parseInt(formData.duration) > MAX_DURATION_MINUTES) {
+      setValidationError(`La durée indiquée dépasse le maximum autorisé (${MAX_DURATION_MINUTES} minutes)`)
+      return
+    }
 
     setUploading(true)
     setUploadProgress(0)
@@ -175,6 +184,9 @@ export default function Upload({ user, token, onBack, onUpload }) {
       formDataMultipart.append('description', formData.description)
       formDataMultipart.append('category', formData.genre)
       formDataMultipart.append('duration', durationSec.toString())
+      if (thumbnail) {
+        formDataMultipart.append('thumbnail', thumbnail)
+      }
 
       setUploadProgress(10)
 
@@ -240,7 +252,7 @@ export default function Upload({ user, token, onBack, onUpload }) {
                   ref={videoPreviewRef}
                   controls
                   width="100%"
-                  poster={uploadedVideo.thumbnail || 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 225"%3E%3Crect fill="%23111827" width="400" height="225"/%3E%3Ctext x="50%25" y="50%25" text-anchor="middle" dy=".3em" fill="%236b7280" font-size="24"%3E📹%3C/text%3E%3C/svg%3E'}
+                  poster={uploadedVideo.thumbnail ? getVideoUrl(uploadedVideo.thumbnail) : 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 225"%3E%3Crect fill="%23111827" width="400" height="225"/%3E%3Ctext x="50%25" y="50%25" text-anchor="middle" dy=".3em" fill="%236b7280" font-size="24"%3E📹%3C/text%3E%3C/svg%3E'}
                 >
                   <source src={URL.createObjectURL(videoFile)} type={videoFile.type || 'video/mp4'} />
                   Votre navigateur ne supporte pas la lecture vidéo
@@ -285,17 +297,17 @@ export default function Upload({ user, token, onBack, onUpload }) {
             <div className="guide-card">
               <div className="guide-icon">📹</div>
               <h3>Format vidéo</h3>
-              <p>MP4, WebM, MOV ou AVI</p>
+              <p>MP4 ou MOV — vidéo H.264, audio AAC</p>
             </div>
             <div className="guide-card">
               <div className="guide-icon">⏱️</div>
               <h3>Durée</h3>
-              <p>3 min à 30 min</p>
+              <p>Jusqu'à {MAX_DURATION_MINUTES} min</p>
             </div>
             <div className="guide-card">
               <div className="guide-icon">💾</div>
               <h3>Taille</h3>
-              <p>Max 500 MB</p>
+              <p>Max 2 Go</p>
             </div>
           </div>
           <div className="guide-tips">
@@ -305,6 +317,7 @@ export default function Upload({ user, token, onBack, onUpload }) {
               <li>Écrivez une description détaillée</li>
               <li>Choisissez une bonne miniature</li>
               <li>Vérifiez la catégorie</li>
+              <li>Si votre fichier est refusé, réexportez-le en H.264 (par exemple avec HandBrake, gratuit)</li>
             </ul>
           </div>
         </div>
@@ -335,14 +348,14 @@ export default function Upload({ user, token, onBack, onUpload }) {
                   <div className="upload-icon">📹</div>
                   <h3>Glissez votre vidéo ici</h3>
                   <p>ou cliquez pour sélectionner</p>
-                  <span className="upload-hint">MP4, WebM, MOV, AVI • Jusqu'à 500 MB</span>
+                  <span className="upload-hint">MP4, MOV (H.264/AAC) • Jusqu'à {MAX_DURATION_MINUTES} min • Jusqu'à 2 Go</span>
                 </div>
               )}
             </div>
             <input
               ref={videoInputRef}
               type="file"
-              accept="video/*,.mp4,.webm,.mov,.avi"
+              accept="video/*,.mp4,.mov"
               onChange={handleVideoInputChange}
               style={{display: 'none'}}
             />
@@ -432,10 +445,13 @@ export default function Upload({ user, token, onBack, onUpload }) {
                   placeholder="Ex: 15"
                   value={formData.duration}
                   onChange={handleFormChange}
-                  className="form-input"
+                  className={`form-input ${formData.duration && parseInt(formData.duration) > MAX_DURATION_MINUTES ? 'invalid' : ''}`}
                   min="1"
-                  max="120"
+                  max={MAX_DURATION_MINUTES}
                 />
+                {formData.duration && parseInt(formData.duration) > MAX_DURATION_MINUTES && (
+                  <p className="field-error">Maximum {MAX_DURATION_MINUTES} minutes</p>
+                )}
               </div>
             </div>
 
