@@ -366,7 +366,7 @@ export default function Home({ onNavigate, user, token, onProfileClick, onLogout
                 {recentVideos.slice(0, 4).map(video => (
                   <div key={video.id} className="carousel-item" onClick={() => setSelectedVideo(video)}>
                     <div className="carousel-thumbnail">
-                      <img src={video.thumbnail || '/thumbnails/default.jpg'} alt={video.title} />
+                      <img src={video.thumbnail ? getVideoUrl(video.thumbnail) : '/thumbnails/default.jpg'} alt={video.title} />
                       <div className="carousel-overlay">
                         <button className="carousel-play">▶</button>
                       </div>
@@ -390,7 +390,7 @@ export default function Home({ onNavigate, user, token, onProfileClick, onLogout
                 {featuredVideos.map(video => (
                   <div key={video.id} className="carousel-item" onClick={() => setSelectedVideo(video)}>
                     <div className="carousel-thumbnail featured">
-                      <img src={video.thumbnail || '/thumbnails/default.jpg'} alt={video.title} />
+                      <img src={video.thumbnail ? getVideoUrl(video.thumbnail) : '/thumbnails/default.jpg'} alt={video.title} />
                       <div className="featured-badge">Sélectionné</div>
                       <div className="carousel-overlay">
                         <button className="carousel-play">▶</button>
@@ -419,7 +419,7 @@ export default function Home({ onNavigate, user, token, onProfileClick, onLogout
                     {categoryVideos.slice(0, 4).map(video => (
                       <div key={video.id} className="carousel-item" onClick={() => setSelectedVideo(video)}>
                         <div className="carousel-thumbnail">
-                          <img src={video.thumbnail || '/thumbnails/default.jpg'} alt={video.title} />
+                          <img src={video.thumbnail ? getVideoUrl(video.thumbnail) : '/thumbnails/default.jpg'} alt={video.title} />
                           <div className="carousel-overlay">
                             <button className="carousel-play">▶</button>
                           </div>

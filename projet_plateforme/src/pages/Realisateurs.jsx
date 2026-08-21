@@ -13,6 +13,11 @@ export default function Realisateurs({ onNavigate, user, onProfileClick, onOpenV
   const [creatorVideos, setCreatorVideos] = useState([])
   const [creatorVideosLoading, setCreatorVideosLoading] = useState(false)
 
+  const getVideoUrl = (url) => {
+    if (url.startsWith('http')) return url
+    return `http://localhost:5000${url}`
+  }
+
   useEffect(() => {
     loadCreators()
   }, [])
@@ -270,7 +275,7 @@ export default function Realisateurs({ onNavigate, user, onProfileClick, onOpenV
                   {creatorVideos.map(video => (
                     <div key={video.id} className="creator-video-card" onClick={() => handleSelectCreatorVideo(video)}>
                       <div className="creator-video-thumb">
-                        <img src={video.thumbnail || '/thumbnails/default.jpg'} alt={video.title} />
+                        <img src={video.thumbnail ? getVideoUrl(video.thumbnail) : '/thumbnails/default.jpg'} alt={video.title} />
                       </div>
                       <div className="creator-video-info">
                         <div className="creator-video-title">{video.title}</div>

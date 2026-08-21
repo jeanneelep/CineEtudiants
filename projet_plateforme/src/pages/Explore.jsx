@@ -435,7 +435,7 @@ export default function Explore({ onNavigate, user, token, onProfileClick, onLog
                     >
                       <div className="card-thumbnail">
                         <img
-                          src={video.thumbnail || '/thumbnails/default.jpg'}
+                          src={video.thumbnail ? getVideoUrl(video.thumbnail) : '/thumbnails/default.jpg'}
                           alt={video.title}
                         />
                         <div className="card-overlay">

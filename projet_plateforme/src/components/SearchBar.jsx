@@ -11,6 +11,11 @@ export default function SearchBar({ onSelectVideo, onSelectCreator }) {
   const containerRef = useRef(null)
   const inputRef = useRef(null)
 
+  const getVideoUrl = (url) => {
+    if (url.startsWith('http')) return url
+    return `http://localhost:5000${url}`
+  }
+
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (containerRef.current && !containerRef.current.contains(e.target)) {
@@ -120,7 +125,7 @@ export default function SearchBar({ onSelectVideo, onSelectCreator }) {
                       {videoResults.map(video => (
                         <div key={video.id} className="search-result-item" onClick={() => handleSelectVideo(video)}>
                           <div className="search-result-thumb">
-                            <img src={video.thumbnail || '/thumbnails/default.jpg'} alt={video.title} />
+                            <img src={video.thumbnail ? getVideoUrl(video.thumbnail) : '/thumbnails/default.jpg'} alt={video.title} />
                           </div>
                           <div className="search-result-info">
                             <div className="search-result-title">{video.title}</div>
