@@ -1,6 +1,6 @@
 import '../styles/Footer.css'
 
-export default function Footer() {
+export default function Footer({ onNavigate }) {
   return (
     <footer className="app-footer">
       <div className="footer-content">
@@ -13,6 +13,9 @@ export default function Footer() {
           <ul>
             <li><a href="#contact">Contact</a></li>
             <li><a href="#mentions">Mentions légales</a></li>
+            {onNavigate && (
+              <li><a href="#rules" onClick={(e) => { e.preventDefault(); onNavigate('rules') }}>Règles de dépôt</a></li>
+            )}
           </ul>
         </div>
       </div>

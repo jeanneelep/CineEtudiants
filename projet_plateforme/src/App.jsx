@@ -7,6 +7,7 @@ import Explore from './pages/Explore'
 import Realisateurs from './pages/Realisateurs'
 import Profile from './pages/Profile'
 import Upload from './pages/Upload'
+import Rules from './pages/Rules'
 import AdminDashboard from './pages/AdminDashboard'
 
 function App() {
@@ -122,6 +123,7 @@ function App() {
           token={token}
           onBack={goBack}
           onUploadClick={() => navigateTo('upload')}
+          onNavigate={navigateTo}
           onLogout={handleLogout}
           onUserUpdate={handleUserUpdate}
         />
@@ -134,7 +136,13 @@ function App() {
           token={token}
           onBack={goBack}
           onUpload={handleUpload}
+          onNavigate={navigateTo}
         />
+      )
+    }
+    if (currentPage === 'rules') {
+      return (
+        <Rules onBack={goBack} />
       )
     }
     if (currentPage === 'explore') {
