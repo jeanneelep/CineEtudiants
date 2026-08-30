@@ -817,6 +817,7 @@ export default function Profile({ user, token, onBack, onUploadClick, onLogout, 
                       <div className="comment-header">
                         <strong>@{comment.user.name}</strong>
                         <div className="comment-meta">
+                          <span className="comment-time">{formatTime(comment.createdAt)}</span>
                           {user?.id === comment.userId && (
                             <div className="kebab-menu-container">
                               <button
@@ -917,6 +918,7 @@ export default function Profile({ user, token, onBack, onUploadClick, onLogout, 
                               <div className="reply-header">
                                 <strong>@{reply.user.name}</strong>
                                 <div className="comment-meta">
+                                  <span className="comment-time">{formatTime(reply.createdAt)}</span>
                                   {user?.id === reply.userId && (
                                     <div className="kebab-menu-container">
                                       <button
