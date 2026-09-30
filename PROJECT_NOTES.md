@@ -2,7 +2,7 @@
 
 Ce fichier remplace la mémoire locale d'une session Claude Code : il voyage avec le repo Git, donc toute nouvelle session (sur n'importe quel ordinateur) doit le lire en premier pour retrouver le contexte complet du projet.
 
-**Dernière mise à jour : 2026-08-30**
+**Dernière mise à jour : 2026-09-30**
 
 ---
 
@@ -120,6 +120,16 @@ npm install
 npm run dev
 # frontend sur http://localhost:5173
 ```
+
+### Reprendre sur un autre ordinateur
+
+Ce qui n'est **pas** dans le repo Git et doit être refait à la main :
+
+1. **`backend/.env`** (ignoré par git) : contient `JWT_SECRET` (obligatoire, sinon le backend refuse de démarrer), `DATABASE_URL`, clés Mailtrap. À copier depuis l'ancien ordi ou à recréer.
+2. **Base PostgreSQL** : locale, donc à réinstaller, puis `cd backend && npx prisma migrate deploy`. Les comptes de test (section 4) et les données sont perdus, il faut recréer les comptes.
+3. **`backend/uploads/`** (vidéos, avatars) : seul `.gitkeep` est versionné. Les films de test sont à ré-uploader.
+4. **Backend en dev** : utiliser `npm run dev` (ts-node). `npm start` exige un `npm run build` préalable (dossier `dist/`).
+5. Début de session Claude : demander de lire `PROJECT_NOTES.md` en premier.
 
 Voir aussi `ADMIN_SETUP.md` et `QUICK_START.sh` à la racine du repo pour la configuration admin/démarrage rapide.
 
